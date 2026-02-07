@@ -1,0 +1,4 @@
+{
+    "debug.javascript.codelens.npmScripts": "top",
+    "typescript.tsserver.web.projectWideIntellisense.enabled": true
+}
