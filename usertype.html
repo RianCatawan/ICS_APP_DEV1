@@ -3,137 +3,221 @@
 <head>
 <meta charset="UTF-8">
 <title>HoopMatch | Basketball Matchmaking</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <style>
-body { font-family: Arial; background:#0f172a; color:#e5e7eb; display:flex; justify-content:center; align-items:center; height:100vh; }
-.box { background:#020617; padding:25px; border-radius:12px; width:350px; }
-h2 { text-align:center; color:#38bdf8; }
-label { display:block; margin-top:15px; }
-select, input { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:none; }
-button { width:100%; padding:10px; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer; }
-.proceed { background:#38bdf8; }
-.find { background:#22c55e; }
+body {
+  margin: 0;
+  padding: 0;
+  background: #0f172a;
+  font-family: Arial, sans-serif;
+  color: #e5e7eb;
+}
+
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+  gap: 30px;
+}
+
+.form-panel {
+  background: #020617;
+  padding: 25px;
+  border-radius: 14px;
+  width: 360px;
+}
+
+.map-panel {
+  background: #020617;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+#map {
+  width: 480px;
+  height: 420px;
+  border-radius: 12px;
+  border: 3px solid #38bdf8;
+}
+
+h2 {
+  text-align: center;
+  color: #38bdf8;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.proceed {
+  background: #38bdf8;
+}
+
+.find {
+  background: #22c55e;
+}
+
+@media (max-width: 900px) {
+  .page {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #map {
+    width: 100%;
+    height: 350px;
+  }
+}
 </style>
-<nav style="position:absolute; top:20px; right:20px;">
-    <a href="admin.html">
-      <button class="click" style="padding:10px 20px; border-radius:8px; background:#38bdf8; color:#fff; border:none; cursor:pointer;">
-        Admin
-      </button>
-    </a>
-  
-      <a href="index.html">
-        <button class="click" style="height:100%;">Back</button>
-      </a>
-    
-  </nav>
-  
 </head>
+
 <body>
-<div class="box">
-  <h2>🏀 HoopMatch</h2>
+<div class="page">
 
-  <label>Player Name</label>
-  <input type="text" id="playerName" placeholder="Enter your name">
+  <!-- LEFT: FORM -->
+  <div class="form-panel">
+    <h2>🏀 HoopMatch</h2>
 
-  <label>Game Type</label>
-  <select id="gameType">
-    <option value="1v1">1v1</option>
-    <option value="2v2">2v2</option>
-    <option value="3v3">3v3</option>
-    <option value="4v4">4v4</option>
-    <option value="5v5">5v5</option>
-  </select>
+    <label>Player Name</label>
+    <input type="text" id="playerName" placeholder="Enter your name">
 
-  <label>Barangay</label>
-  <select id="barangay">
-    <option>Alae</option>
-    <option>Dahilayan</option>
-    <option>Dalirig</option>
-    <option>Damilag</option>
-    <option>Diclum</option>
-    <option>Guilang-guilang</option>
-    <option>Kalugmanan</option>
-    <option>Lindaban</option>
-    <option>Lingion</option>
-    <option>Maluko</option>
-    <option>San Miguel</option>
-    <option>Santiago</option>
-  </select>
+    <label>Group Name</label>
+    <input type="text" id="groupName" placeholder="Enter your group name">
 
-  <label>Time Slot</label>
-  <select id="playTime">
-    <option>4:00 AM – 5:30 AM</option>
-    <option>5:30 AM – 7:00 AM</option>
-    <option>7:00 AM – 8:30 AM</option>
-    <option>8:30 AM – 10:00 AM</option>
-    <option>1:00 PM – 2:30 PM</option>
-    <option>4:00 PM – 5:30 PM</option>
-    <option>5:30 PM – 7:00 PM</option>
-    <option>7:00 PM – 8:30 PM</option>
-    <option>8:30 PM – 10:00 PM</option>
-  </select>
+    <label>Game Type</label>
+    <select id="gameType">
+      <option>1v1</option>
+      <option>2v2</option>
+      <option>3v3</option>
+      <option>4v4</option>
+      <option>5v5</option>
+    </select>
 
-  <button class="proceed" onclick="proceed()">Proceed</button>
-  <button class="find" onclick="submitMatch()">Find Match</button>
+    <label>Barangay</label>
+    <select id="barangay">
+      <option value="">-- Select Barangay --</option>
+      <option value="Tankulan">Tankulan (Center)</option>
+      <option value="Poblacion">Poblacion</option>
+      <option value="San Isidro">San Isidro</option>
+      <option value="Maluko">Maluko</option>
+      <option value="Damilag">Damilag</option>
+      <option value="Dahilayan">Dahilayan</option>
+      <option value="Kisolon">Kisolon</option>
+    </select>
+
+    <label>Time Slot</label>
+    <select id="playTime">
+      <option>4:00 AM – 5:30 AM</option>
+      <option>5:30 AM – 7:00 AM</option>
+      <option>7:00 PM – 8:30 PM</option>
+      <option>8:30 PM – 10:00 PM</option>
+    </select>
+
+    <button class="proceed">Proceed</button>
+    <a href="match-data.html">
+    <button class="find">Find Match</button>
+    </a>
+  </div>
+
+  <!-- RIGHT: MAP -->
+  <div class="map-panel">
+    <div id="map"></div>
+  </div>
+
 </div>
 
 <script>
-function proceed() {
-  alert("Please review your selections, then click Find Match.");
-}
+// ================= MAP SETUP =================
+// Center map on Tankulan
+const map = L.map('map').setView([8.419, 124.835], 14);
 
-// Maximum players mapping per game type
-const maxPlayers = {
-  "1v1": 2,
-  "2v2": 2,
-  "3v3": 2,
-  "4v4": 2,
-  "5v5": 2
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+let marker;
+
+// Manolo Fortich nearby barangays
+const barangayData = {
+  "Tankulan":    { coords: [8.419, 124.835], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "Poblacion":   { coords: [8.417, 124.841], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "San Isidro":  { coords: [8.421, 124.832], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "Maluko":      { coords: [8.423, 124.839], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "Damilag":     { coords: [8.426, 124.845], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "Dahilayan":   { coords: [8.422, 124.847], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" },
+  "Kisolon":     { coords: [8.418, 124.848], img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Barangay.png" }
 };
 
-function submitMatch() {
-  const playerName = document.getElementById("playerName").value.trim();
+// When barangay changes, show exact location
+document.getElementById("barangay").addEventListener("change", function () {
+  const selected = this.value;
+  if (!barangayData[selected]) return;
 
+  if (marker) map.removeLayer(marker);
 
-  const gameType = document.getElementById("gameType").value;
-  const barangay = document.getElementById("barangay").value;
-  const time = document.getElementById("playTime").value;
+  marker = L.marker(barangayData[selected].coords).addTo(map);
 
-  // Get allMatches array or create new
-  let allMatches = JSON.parse(localStorage.getItem("allMatches")) || [];
+  marker.bindPopup(`
+    <strong>${selected}</strong><br>
+    <img src="${barangayData[selected].img}" width="120">
+  `).openPopup();
 
-  // Check if match already exists with same gameType, barangay, and time
-  let existingMatch = allMatches.find(m =>
-    m.gameType === gameType &&
-    m.barangay === barangay &&
-    m.time === time &&
-    m.status !== "Completed"
-  );
+  // Zoom in on selected barangay
+  map.setView(barangayData[selected].coords, 16);
+});
 
-  if (existingMatch) {
-    // Add player to existing match
-    if (!existingMatch.players.includes(playerName)) {
-      existingMatch.players.push(playerName);
-    }
-    // Update status automatically
-    existingMatch.status = existingMatch.players.length >= maxPlayers[gameType] ? "Full" : "Open";
-  } else {
-    // Create new match
-    allMatches.push({
-      gameType,
-      barangay,
-      time,
-      players: [playerName],
-      status: "Open",
-      rating: "",
-      feedback: ""
-    });
+// ================= MATCH LOGIC =================
+const proceedBtn = document.querySelector('.proceed');
+const findBtn = document.querySelector('.find');
+
+proceedBtn.addEventListener('click', () => {
+  const playerName = document.getElementById('playerName').value.trim();
+  const groupName = document.getElementById('groupName').value.trim();
+
+  if (!playerName || !groupName) {
+    alert('Please enter both Player Name and Group Name before proceeding.');
+    return;
   }
 
-  localStorage.setItem("allMatches", JSON.stringify(allMatches));
+  alert('Please review your selections, then click Find Match.');
+});
 
-  // Redirect to match view
-  window.location.href = "match-data.html";
-}
+findBtn.addEventListener('click', () => {
+  const playerName = document.getElementById('playerName').value.trim();
+  const groupName = document.getElementById('groupName').value.trim();
+
+  if (!playerName || !groupName) {
+    alert('Cannot proceed: both Player Name and Group Name are required.');
+    return;
+  }
+
+  alert('Match submitted! (logic continues here)');
+});
 </script>
+
 </body>
 </html>
