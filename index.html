@@ -2,133 +2,140 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HoopMatch | Basketball Matchmaking</title>
+<title>HoopMatch | Home</title>
 <style>
-body { font-family: Arial; background:#0f172a; color:#e5e7eb; display:flex; justify-content:center; align-items:center; height:100vh; }
-.box { background:#020617; padding:25px; border-radius:12px; width:350px; }
-h2 { text-align:center; color:#38bdf8; }
-label { display:block; margin-top:15px; }
-select, input { width:100%; padding:10px; margin-top:5px; border-radius:8px; border:none; }
-button { width:100%; padding:10px; border:none; border-radius:8px; margin-top:10px; font-weight:bold; cursor:pointer; }
-.proceed { background:#38bdf8; }
-.find { background:#22c55e; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: #020617;
+}
+
+nav h1 {
+  color: #38bdf8;
+}
+
+nav a button {
+  margin-left: 10px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-main {
+  background: #22c55e;
+  color: #020617;
+}
+
+.btn-admin {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  max-width: 600px;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  color: #cbd5f5;
+}
+
+.hero button {
+  padding: 14px 30px;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: #22c55e;
+  color: #020617;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 40px;
+}
+
+.card {
+  background: #020617;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.card h3 {
+  color: #38bdf8;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #cbd5f5;
+  font-size: 0.95rem;
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  background: #020617;
+  color: #94a3b8;
+}
 </style>
-<nav style="position:absolute; top:20px; right:20px;">
-    <a href="admin.html">
-      <button class="click" style="padding:10px 20px; border-radius:8px; background:#38bdf8; color:#fff; border:none; cursor:pointer;">
-        Admin
-      </button>
-    </a>
-  </nav>
-  
 </head>
 <body>
-<div class="box">
-  <h2>🏀 HoopMatch</h2>
 
-  <label>Player Name</label>
-  <input type="text" id="playerName" placeholder="Enter your name">
+<!-- NAVBAR -->
+<nav>
+  <h1>🏀 HoopMatch</h1>
+  <div>
+    <a href="usertype.html"><button class="btn-main">Find Match</button></a>
+    <a href="admin.html"><button class="btn-admin">Admin</button></a>
+  </div>
+</nav>
 
-  <label>Game Type</label>
-  <select id="gameType">
-    <option value="1v1">1v1</option>
-    <option value="2v2">2v2</option>
-    <option value="3v3">3v3</option>
-    <option value="4v4">4v4</option>
-    <option value="5v5">5v5</option>
-  </select>
-
-  <label>Barangay</label>
-  <select id="barangay">
-    <option>Alae</option>
-    <option>Dahilayan</option>
-    <option>Dalirig</option>
-    <option>Damilag</option>
-    <option>Diclum</option>
-    <option>Guilang-guilang</option>
-    <option>Kalugmanan</option>
-    <option>Lindaban</option>
-    <option>Lingion</option>
-    <option>Maluko</option>
-    <option>San Miguel</option>
-    <option>Santiago</option>
-  </select>
-
-  <label>Time Slot</label>
-  <select id="playTime">
-    <option>4:00 AM – 5:30 AM</option>
-    <option>5:30 AM – 7:00 AM</option>
-    <option>7:00 AM – 8:30 AM</option>
-    <option>8:30 AM – 10:00 AM</option>
-    <option>1:00 PM – 2:30 PM</option>
-    <option>4:00 PM – 5:30 PM</option>
-    <option>5:30 PM – 7:00 PM</option>
-    <option>7:00 PM – 8:30 PM</option>
-    <option>8:30 PM – 10:00 PM</option>
-  </select>
-
-  <button class="proceed" onclick="proceed()">Proceed</button>
-  <button class="find" onclick="submitMatch()">Find Match</button>
-</div>
-
-<script>
-function proceed() {
-  alert("Please review your selections, then click Find Match.");
-}
-
-// Maximum players mapping per game type
-const maxPlayers = {
-  "1v1": 2,
-  "2v2": 2,
-  "3v3": 2,
-  "4v4": 2,
-  "5v5": 2
-};
-
-function submitMatch() {
-  const playerName = document.getElementById("playerName").value.trim();
+<!-- HERO SECTION -->
+<section class="hero">
+  <h2>Find Your Next Basketball Game</h2>
+  <p>
+    HoopMatch helps you connect with players in your barangay.
+    Choose your game type, pick a time, and join a match instantly.
+  </p>
+  <a href="usertype.html">
+    <button>Start Matching</button>
+  </a>
+</section>
 
 
-  const gameType = document.getElementById("gameType").value;
-  const barangay = document.getElementById("barangay").value;
-  const time = document.getElementById("playTime").value;
 
-  // Get allMatches array or create new
-  let allMatches = JSON.parse(localStorage.getItem("allMatches")) || [];
-
-  // Check if match already exists with same gameType, barangay, and time
-  let existingMatch = allMatches.find(m =>
-    m.gameType === gameType &&
-    m.barangay === barangay &&
-    m.time === time &&
-    m.status !== "Completed"
-  );
-
-  if (existingMatch) {
-    // Add player to existing match
-    if (!existingMatch.players.includes(playerName)) {
-      existingMatch.players.push(playerName);
-    }
-    // Update status automatically
-    existingMatch.status = existingMatch.players.length >= maxPlayers[gameType] ? "Full" : "Open";
-  } else {
-    // Create new match
-    allMatches.push({
-      gameType,
-      barangay,
-      time,
-      players: [playerName],
-      status: "Open",
-      rating: "",
-      feedback: ""
-    });
-  }
-
-  localStorage.setItem("allMatches", JSON.stringify(allMatches));
-
-  // Redirect to match view
-  window.location.href = "match-data.html";
-}
-</script>
 </body>
 </html>
