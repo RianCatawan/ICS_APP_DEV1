@@ -91,7 +91,7 @@ nav a button {
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
   <!-- Brand -->
-  <a class="navbar-brand fw-bold" href="index.html">🏀 HoopMatch</a>
+  <a class="navbar-brand fw-bold" href="index.php">🏀 HoopMatch</a>
 
   <!-- Mobile toggle -->
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
@@ -103,28 +103,28 @@ nav a button {
   <div class="collapse navbar-collapse" id="mainNavbar">
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       <li class="nav-item">
-        <a class="nav-link active" href="usertype.html">Find Match</a>
+        <a class="nav-link active" href="usertype.php">Find Match</a>
       </li>
 <li class="nav-item">
-  <a class="nav-link active" href="courts.html">Courts</a>
+  <a class="nav-link active" href="courts.php">Courts</a>
 </li>
 <li class="nav-item">
-  <a class="nav-link active" href="aboutus.html">How It Works</a>
+  <a class="nav-link active" href="aboutus.php">How It Works</a>
 </li>
 <li class="nav-item">
-  <a class="nav-link active" href="aboutus.html">Contact us</a>
+  <a class="nav-link active" href="aboutus.php">Contact us</a>
 </li>
 <li class="nav-item">
-  <a class="nav-link active" href="aboutus.html">about Us</a>
+  <a class="nav-link active" href="aboutus.php">about Us</a>
 </li>
     </ul>
 
     <!-- Buttons -->
     <div class="d-flex gap-2">
-      <a href="login.html">
+      <a href="login.php">
         <button class="btn btn-outline-light">Login</button>
       </a>
-      <a href="admin.html">
+      <a href="admin.php">
         <button class="btn btn-warning">Admin</button>
       </a>
     </div>
@@ -136,7 +136,7 @@ nav a button {
 <section class="hero">
   <h2>Find Your Next Basketball Game</h2>
 
-  <a href="usertype.html">
+  <a href="usertype.php">
     <button>Start Matching</button>
   </a>
 </section>
