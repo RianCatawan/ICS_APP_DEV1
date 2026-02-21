@@ -102,21 +102,8 @@ nav a button {
   <!-- Nav links -->
   <div class="collapse navbar-collapse" id="mainNavbar">
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-      <li class="nav-item">
-        <a class="nav-link active" href="usertype.php">Find Match</a>
-      </li>
-<li class="nav-item">
-  <a class="nav-link active" href="courts.php">Courts</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link active" href="aboutus.php">How It Works</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link active" href="aboutus.php">Contact us</a>
-</li>
-<li class="nav-item">
-  <a class="nav-link active" href="aboutus.php">about Us</a>
-</li>
+     
+
     </ul>
 
     <!-- Buttons -->
