@@ -140,9 +140,6 @@ button {
     <label>Player Name</label>
     <input type="text" id="playerName" placeholder="Enter your name">
 
-    <label>Group Name</label>
-    <input type="text" id="groupName" placeholder="Enter your group name">
-
     <label>Game Type</label>
     <select id="gameType">
       <option>1v1</option>
@@ -162,14 +159,6 @@ button {
       <option value="Damilag">Damilag</option>
       <option value="Dahilayan">Dahilayan</option>
       <option value="Kisolon">Kisolon</option>
-    </select>
-
-    <label>Time Slot</label>
-    <select id="playTime">
-      <option>4:00 AM – 5:30 AM</option>
-      <option>5:30 AM – 7:00 AM</option>
-      <option>7:00 PM – 8:30 PM</option>
-      <option>8:30 PM – 10:00 PM</option>
     </select>
 
     <button class="proceed">Proceed</button>

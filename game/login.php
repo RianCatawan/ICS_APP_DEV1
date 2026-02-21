@@ -26,7 +26,7 @@ if(isset($_POST['login'])){
             if($row['role'] == 'admin'){
                 header("Location: admin.php");
             } else {
-                header("Location: dashboard.php");
+                header("Location: match-start.php");
             }
 
             exit();
