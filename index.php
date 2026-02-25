@@ -7,6 +7,26 @@ if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    /* ==============================
+       HARD CODED ADMIN ACCOUNT
+    ===============================*/
+    if($username === "admin" && $password === "password"){
+
+        $_SESSION['username'] = "admin";
+        $_SESSION['role'] = "admin";
+
+        // Optional: log admin login
+        $conn->query("INSERT INTO suser_logs (username)
+                      VALUES ('admin')");
+
+        header("Location: admin.php");
+        exit();
+    }
+
+    /* ==============================
+       NORMAL USER LOGIN (DATABASE)
+    ===============================*/
+
     $sql = "SELECT * FROM users WHERE username='$username'";
     $result = $conn->query($sql);
 
@@ -19,16 +39,10 @@ if(isset($_POST['login'])){
             $_SESSION['username'] = $username;
             $_SESSION['role'] = $row['role'];
 
-            // Insert Login Log
-            $conn->query("INSERT INTO suser_logs (username, action)
-                          VALUES ('$username', 'LOGIN')");
+            $conn->query("INSERT INTO suser_logs (username)
+                          VALUES ('$username')");
 
-            if($row['role'] == 'admin'){
-                header("Location: admin.php");
-            } else {
-                header("Location: match-start.php");
-            }
-
+            header("Location: match-start.php");
             exit();
 
         } else {

@@ -118,7 +118,7 @@ button {
 <!-- NAVBAR -->
 <nav class="navbar">
   <a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
-  <a href="match+-start.php" class="btn-back">← Back</a>
+  <a href="match-start.php" class="btn-back">← Back</a>
 </nav>
 
 <!-- MAIN PAGE -->
@@ -126,7 +126,7 @@ button {
 
   <!-- LEFT: FORM PANEL -->
   <div class="form-panel">
-    <h2>🏀 HoopMatch</h2>
+    <h2> HoopMatch</h2>
 
     <label>Player Name</label>
     <input type="text" id="playerName" placeholder="Enter your name">

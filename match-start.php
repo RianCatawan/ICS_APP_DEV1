@@ -83,12 +83,12 @@ nav {
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark px-4">
   <!-- Brand -->
-  <a class="navbar-brand fw-bold" href="index.php">🏀 HoopMatch</a>
+  <a class="navbar-brand fw-bold" href="index.php">HoopMatch</a>
 
   <!-- Right side: Logout if logged in -->
   <div class="ms-auto">
     <?php if(isset($_SESSION['username'])): ?>
-      <span class="me-3">Hello, <?php echo $_SESSION['username']; ?>!</span>
+      <span class="me-3">welcome, <?php echo $_SESSION['username']; ?>!</span>
       <a href="logout.php" class="btn btn-logout">Logout</a>
     <?php else: ?>
       <a href="index.php" class="btn btn-main">Login</a>
