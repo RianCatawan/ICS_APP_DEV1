@@ -1,5 +1,5 @@
 <?php
-include "db.php"; // Your db.php should connect to hoopmatch_db
+include "db.php";
 ?>
 
 <!DOCTYPE html>
@@ -25,14 +25,18 @@ include "db.php"; // Your db.php should connect to hoopmatch_db
         </thead>
         <tbody>
         <?php
-        $sql = "SELECT * FROM user_logs ORDER BY log_time DESC";
+        $sql = "SELECT ul.*, u.username 
+                FROM user_logs ul
+                LEFT JOIN users u ON ul.user_id = u.id
+                ORDER BY ul.log_time DESC";
         $result = $conn->query($sql);
-        if($result->num_rows > 0){
+
+        if($result && $result->num_rows > 0){
             $i = 1;
             while($row = $result->fetch_assoc()){
                 echo "<tr>
                         <td>".$i++."</td>
-                        <td>".$row['username']."</td>
+                        <td>".($row['username'] ?? 'Unknown')."</td>
                         <td>".$row['action']."</td>
                         <td>".$row['log_time']."</td>
                       </tr>";

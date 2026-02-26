@@ -2,20 +2,16 @@
 session_start();
 include "db.php";
 
-// Check if user is logged in
-if(isset($_SESSION['username'])){
+if(isset($_SESSION['user_id'])){
 
-    $username = $_SESSION['username'];
+    $user_id = $_SESSION['user_id'];
 
-    // Use prepared statement to safely log logout
-    $stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
-    $action = 'LOGOUT';
-    $stmt->bind_param("ss", $username, $action);
+    $stmt = $conn->prepare("INSERT INTO user_logs (user_id, action)
+                            VALUES (?, 'LOGOUT')");
+    $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->close();
 }
 
-// Destroy session and redirect
 session_destroy();
 header("Location: index.php");
 exit();

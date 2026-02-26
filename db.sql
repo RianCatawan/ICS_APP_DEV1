@@ -1,0 +1,36 @@
+CREATE DATABASE hoopmatch_db;
+USE hoopmatch_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin','user') NOT NULL DEFAULT 'user',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE barangays (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    barangay_name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE matches (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    barangay_id INT NOT NULL,
+    game_type ENUM('1v1','2v2','3v3','4v4','5v5') NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (barangay_id) REFERENCES barangays(id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+CREATE TABLE user_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    action ENUM('LOGIN','LOGOUT','REGISTER') NOT NULL,
+    log_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);

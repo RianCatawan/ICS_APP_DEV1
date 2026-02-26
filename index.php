@@ -15,20 +15,35 @@ if(isset($_POST['login'])){
         $_SESSION['username'] = "admin";
         $_SESSION['role'] = "admin";
 
-        // Optional: log admin login
-        $conn->query("INSERT INTO suser_logs (username)
-                      VALUES ('admin')");
+        // Check if admin exists in DB
+        $check = $conn->query("SELECT id FROM users WHERE username='admin'");
+        
+        if($check->num_rows == 0){
+            $hashed = password_hash("password", PASSWORD_DEFAULT);
+            $conn->query("INSERT INTO users (username, password, role) 
+                          VALUES ('admin', '$hashed', 'admin')");
+            $admin_id = $conn->insert_id;
+        } else {
+            $row = $check->fetch_assoc();
+            $admin_id = $row['id'];
+        }
+
+        // Log admin login correctly
+        $conn->query("INSERT INTO user_logs (user_id, action)
+                      VALUES ($admin_id, 'LOGIN')");
 
         header("Location: admin.php");
         exit();
     }
 
     /* ==============================
-       NORMAL USER LOGIN (DATABASE)
+       NORMAL USER LOGIN
     ===============================*/
 
-    $sql = "SELECT * FROM users WHERE username='$username'";
-    $result = $conn->query($sql);
+    $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if($result->num_rows > 0){
 
@@ -36,11 +51,15 @@ if(isset($_POST['login'])){
 
         if(password_verify($password, $row['password'])){
 
-            $_SESSION['username'] = $username;
+            $_SESSION['username'] = $row['username'];
             $_SESSION['role'] = $row['role'];
+            $_SESSION['user_id'] = $row['id'];
 
-            $conn->query("INSERT INTO suser_logs (username)
-                          VALUES ('$username')");
+            $user_id = $row['id'];
+
+            // Log user login correctly
+            $conn->query("INSERT INTO user_logs (user_id, action)
+                          VALUES ($user_id, 'LOGIN')");
 
             header("Location: match-start.php");
             exit();
@@ -54,7 +73,6 @@ if(isset($_POST['login'])){
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
