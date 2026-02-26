@@ -2,7 +2,7 @@
 session_start();
 
 if(!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin'){
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 ?>
@@ -42,6 +42,7 @@ a {
     <h1>👑 Admin Dashboard</h1>
     <p>Welcome, <?php echo $_SESSION['username']; ?>!</p>
     <a href="logout.php">Logout</a>
+    <a href="user_logs.php">user logs</a>
 </div>
 
 </body>
