@@ -1,17 +1,53 @@
+<?php
+session_start();
+include "db.php";
+
+/* ===============================
+   CHECK IF USER LOGGED IN
+================================*/
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+/* ===============================
+   HANDLE TEAM CREATION
+================================*/
+if (isset($_POST['createTeam'])) {
+
+    $team_name = trim($_POST['teamName']);
+    $team_captain = trim($_POST['teamCaptain']);
+
+    if (!empty($team_name) && !empty($team_captain)) {
+
+        $stmt = $conn->prepare("INSERT INTO teams (user_id, team_name, team_captain) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $user_id, $team_name, $team_captain);
+        $stmt->execute();
+        $stmt->close();
+
+        // Redirect AFTER saving
+        header("Location: match.php");
+        exit();
+    } else {
+        $error = "Please fill all fields.";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>HoopMatch | Create Team</title>
 
-<!-- Bootstrap (optional for layout) -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 body {
   margin: 0;
   padding: 40px;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #0f172a;
   color: #e5e7eb;
   display: flex;
@@ -20,14 +56,11 @@ body {
   min-height: 100vh;
 }
 
-/* Page Header */
 h1 {
   color: #38bdf8;
   margin-bottom: 30px;
-  text-shadow: 0 0 10px #38bdf8;
 }
 
-/* Form container */
 .team-card {
   background: #020617;
   border-radius: 16px;
@@ -36,102 +69,58 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
-/* Input fields */
 input {
-  padding: 12px 15px;
+  padding: 12px;
   border-radius: 12px;
   border: 2px solid #38bdf8;
   background: #0f172a;
   color: #e5e7eb;
-  font-weight: bold;
-  font-size: 16px;
-  outline: none;
-  transition: all 0.3s;
   width: 100%;
 }
 
-input:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
-}
-
-/* Buttons */
 button {
   padding: 14px;
   border: none;
   border-radius: 12px;
   font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-#createTeamBtn {
   background: #38bdf8;
   color: #020617;
+  cursor: pointer;
 }
 
-#createTeamBtn:hover {
+button:hover {
   background: #22c55e;
   color: #ffffff;
 }
 
-/* Optional: Team preview box */
-.team-preview {
-  background: #0f172a;
-  border-radius: 12px;
-  padding: 15px;
-  border: 2px solid #38bdf8;
-  text-align: center;
+.error {
+  color: #f87171;
   font-weight: bold;
-  color: #38bdf8;
-  display: none; /* Initially hidden */
 }
 </style>
 </head>
 <body>
 
 <h1>Create Team</h1>
+<p>Welcome, <?php echo $_SESSION['username']; ?></p>
 
 <div class="team-card">
-  <label for="teamName">Team Name</label>
-  <input type="text" id="teamName" placeholder="Enter your team name">
 
-  <label for="teamCaptain">Team Captain</label>
-  <input type="text" id="teamCaptain" placeholder="Enter captain's name">
+  <?php if(isset($error)) echo "<div class='error'>$error</div>"; ?>
 
-  <button id="createTeamBtn">Create Team</button>
+  <form method="POST">
+    <label>Team Name</label>
+    <input type="text" name="teamName" required>
 
-  <!-- Optional team preview -->
-  <div class="team-preview" id="teamPreview"></div>
+    <label>Team Captain</label>
+    <input type="text" name="teamCaptain" required>
+
+    <button  type="submit" name="createTeam">Create Team</button>
+  </form>
+
 </div>
-
-<script>
-const createBtn = document.getElementById('createTeamBtn');
-const teamPreview = document.getElementById('teamPreview');
-
-createBtn.addEventListener('click', () => {
-  const name = document.getElementById('teamName').value.trim();
-  const captain = document.getElementById('teamCaptain').value.trim();
-
-  if (!name || !captain) {
-    alert('Please fill all fields to create the team.');
-    return;
-  }
-
-  // Display team preview
-  teamPreview.style.display = 'block';
-  teamPreview.innerHTML = `
-    Team <strong>${name}</strong> <br>
-    Captain: <strong>${captain}</strong>
-  `;
-
-  alert(`Team "${name}" created successfully!`);
-});
-</script>
 
 </body>
 </html>
