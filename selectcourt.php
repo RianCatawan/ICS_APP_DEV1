@@ -1,139 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>HoopMatch | Select Court</title>
+<?php
+session_start();
+include "db.php";
 
-<!-- Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+$user_id = $_SESSION['user_id'];
+
+if(isset($_POST['proceed'])){
+
+$court = $_POST['court'];
+
+$stmt = $conn->prepare("INSERT INTO usercourts (user_id, court)
+VALUES (?, ?)
+ON DUPLICATE KEY UPDATE court=?");
+
+$stmt->bind_param("iss",$user_id,$court,$court);
+$stmt->execute();
+$stmt->close();
+
+header("Location: match.php");
+exit();
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Select Court</title>
 
 <style>
-body {
-  margin: 0;
-  padding: 40px;
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-.map-card {
-  background: #020617;
-  border-radius: 16px;
-  padding: 15px;
-  width: 500px;
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.card{
+background:#020617;
+padding:30px;
+border-radius:15px;
+width:400px;
+display:flex;
+flex-direction:column;
+gap:15px;
 }
 
-/* Highlighted select dropdown */
-#court {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 2px solid #38bdf8;
-  background: #0f172a;
-  color: #e5e7eb;
-  font-weight: bold;
-  font-size: 16px;
-  outline: none;
-  transition: all 0.3s;
+select{
+padding:10px;
+border-radius:10px;
+border:2px solid #38bdf8;
+background:#0f172a;
+color:white;
 }
 
-#court:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+button{
+padding:12px;
+border:none;
+border-radius:10px;
+background:#38bdf8;
+font-weight:bold;
+cursor:pointer;
 }
 
-/* Map inside the card */
-#map {
-  width: 100%;
-  height: 400px;
-  border-radius: 12px;
-  border: 3px solid #38bdf8;
+button:hover{
+background:#22c55e;
 }
 
-/* Proceed button */
-#proceedBtn {
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  background: #38bdf8;
-  color: #020617;
-  font-weight: bold;
-  font-size: 16px;
-  cursor: pointer;
-  transition: 0.3s;
+.map{
+height:200px;
+background:#111827;
+border-radius:10px;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-#proceedBtn:hover {
-  background: #22c55e;
-  color: #ffffff;
-}
 </style>
+
 </head>
+
 <body>
 
-<div class="map-card">
-  <!-- Dropdown inside the box -->
-  <select id="court">
-    <option value="">-- Select Court --</option>
-    <option value="Saint Joseph Court">Saint Joseph Court</option>
-    <option value="Plaza">Plaza Court</option>
-    <option value="Tankulan">Tankulan Court</option>
-  </select>
+<div class="card">
 
-  <!-- Map -->
-  <div id="map"></div>
+<h2>Select Court</h2>
 
-  <!-- Proceed Button -->
-  <button id="proceedBtn">Proceed</button>
+<div class="map">MAP HERE</div>
+
+<form method="POST">
+
+<select name="court" required>
+
+<option value="">Select Court</option>
+
+<option value="Court 1">Court 1</option>
+
+<option value="Court 2">Court 2</option>
+
+<option value="Court 3">Court 3</option>
+
+</select>
+
+<button name="proceed">Proceed</button>
+
+</form>
+
 </div>
-
-<script>
-// Initialize Leaflet map centered around Manolo Fortich
-const map = L.map('map').setView([8.419, 124.835], 14);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
-let marker;
-
-// Court coordinates (approximate)
-const courtData = {
-  "Saint Joseph Court": { coords: [8.420, 124.836] },
-  "Plaza": { coords: [8.417, 124.841] },
-  "Tankulan": { coords: [8.419, 124.835] }
-};
-
-// Update map when a court is selected
-document.getElementById("court").addEventListener("change", function () {
-  const selected = this.value;
-  if (!courtData[selected]) return;
-
-  if (marker) map.removeLayer(marker);
-  marker = L.marker(courtData[selected].coords).addTo(map);
-  marker.bindPopup(`<strong>${selected}</strong>`).openPopup();
-  map.setView(courtData[selected].coords, 16);
-});
-
-// Proceed button click
-document.getElementById("proceedBtn").addEventListener("click", () => {
-  const selectedCourt = document.getElementById("court").value;
-  if (!selectedCourt) {
-    alert("Please select a court before proceeding.");
-    return;
-  }
-  alert(`Proceeding with ${selectedCourt}!`);
-  // Here you can redirect or submit data
-});
-</script>
 
 </body>
 </html>
