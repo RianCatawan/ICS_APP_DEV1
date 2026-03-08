@@ -2,123 +2,98 @@
 session_start();
 include "db.php";
 
-/* ===============================
-   CHECK IF USER LOGGED IN
-================================*/
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+if(!isset($_SESSION['user_id'])){
+    header("Location: index.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 
-/* ===============================
-   HANDLE TEAM CREATION
-================================*/
-if (isset($_POST['createTeam'])) {
+if(isset($_POST['create'])){
 
-    $team_name = trim($_POST['teamName']);
-    $team_captain = trim($_POST['teamCaptain']);
+    $team_name = $_POST['team_name'];
+    $player_name = $_POST['player_name'];
+    $game_type = $_POST['game_type'];
 
-    if (!empty($team_name) && !empty($team_captain)) {
+    $stmt = $conn->prepare("INSERT INTO userteams (user_id, team_name, player_name, game_type)
+                            VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("isss", $user_id, $team_name, $player_name, $game_type);
+    $stmt->execute();
+    $stmt->close();
 
-        $stmt = $conn->prepare("INSERT INTO teams (user_id, team_name, team_captain) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $user_id, $team_name, $team_captain);
-        $stmt->execute();
-        $stmt->close();
-
-        // Redirect AFTER saving
-        header("Location: match.php");
-        exit();
-    } else {
-        $error = "Please fill all fields.";
-    }
+    header("Location: selectcourt.php");
+    exit();
 }
 ?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>HoopMatch | Create Team</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+<title>Create Team</title>
 <style>
-body {
-  margin: 0;
-  padding: 40px;
-  font-family: Arial;
-  background: #0f172a;
-  color: #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
-
-h1 {
-  color: #38bdf8;
-  margin-bottom: 30px;
+.card{
+background:#020617;
+padding:30px;
+border-radius:15px;
+width:400px;
+display:flex;
+flex-direction:column;
+gap:15px;
 }
-
-.team-card {
-  background: #020617;
-  border-radius: 16px;
-  padding: 25px 30px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+input, select{
+padding:10px;
+border-radius:10px;
+border:2px solid #38bdf8;
+background:#0f172a;
+color:white;
 }
-
-input {
-  padding: 12px;
-  border-radius: 12px;
-  border: 2px solid #38bdf8;
-  background: #0f172a;
-  color: #e5e7eb;
-  width: 100%;
+button{
+padding:12px;
+border:none;
+border-radius:10px;
+background:#38bdf8;
+font-weight:bold;
+cursor:pointer;
 }
-
-button {
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  background: #38bdf8;
-  color: #020617;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.error {
-  color: #f87171;
-  font-weight: bold;
+button:hover{
+background:#22c55e;
+color:white;
 }
 </style>
 </head>
+
 <body>
 
-<h1>Create Team</h1>
-<p>Welcome, <?php echo $_SESSION['username']; ?></p>
+<div class="card">
 
-<div class="team-card">
+<h2>Create Team</h2>
 
-  <?php if(isset($error)) echo "<div class='error'>$error</div>"; ?>
+<form method="POST">
 
-  <form method="POST">
-    <label>Team Name</label>
-    <input type="text" name="teamName" required>
+<input type="text" name="team_name" placeholder="Team Name" required>
 
-    <label>Team Captain</label>
-    <input type="text" name="teamCaptain" required>
+<input type="text" name="player_name" placeholder="Player Name" required>
+                                                                                                                                            
+<select name="game_type" required>
+<option value="">Select Game Type</option>
+<option value="1v1">1v1</option>
+<option value="2v2">2v2</option>
+<option value="3v3">3v3</option>
+<option value="5v5">5v5</option>
+</select>
 
-    <button  type="submit" name="createTeam">Create Team</button>
-  </form>
+<button type="submit" name="create">Proceed</button>
+
+</form>
 
 </div>
 
