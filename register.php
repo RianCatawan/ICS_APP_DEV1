@@ -29,100 +29,153 @@ if(isset($_POST['register'])){
 <title>HoopMatch | Register</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#000;
+    color:white;
 }
 
-.navbar {
-  background: #0f172a;
+/* ORANGE TOP BACKGROUND */
+.top-bg{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:300px;
+    background:#F57C00;
+    z-index:-5;
 }
 
-.navbar-brand {
-  color: #38bdf8 !important;
-  font-weight: bold;
+/* S CURVE */
+.curve{
+    position:absolute;
+    bottom:-1px;
+    width:100%;
 }
 
-.register-container {
-  margin: auto;
-  padding: 40px;
-  background: #1e293b;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+/* NAVBAR */
+.navbar{
+    background:transparent;
 }
 
-.register-container h2 {
-  margin-bottom: 25px;
-  color: #38bdf8;
+.navbar-brand{
+    color:white !important;
+    font-weight:bold;
+    font-size:24px;
 }
 
-.form-control {
-  background: #0f172a;
-  color: #e5e7eb;
-  border: 1px solid #38bdf8;
-  border-radius: 8px;
-  margin-bottom: 20px;
+/* REGISTER BOX */
+.register-container{
+    margin-top:210px;
+    background:#111;
+    padding:50px;
+    border-radius:12px;
+    max-width:450px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.6);
 }
 
-.form-control::placeholder {
-  color: #cbd5f5;
+.register-container h2{
+    color:#F57C00;
+    margin-bottom:25px;
 }
 
-.btn-register {
-  background: #22c55e;
-  color: #020617;
-  font-weight: bold;
-  padding: 12px 25px;
-  border-radius: 10px;
-  border: none;
+/* INPUT */
+.form-control{
+    background:#000;
+    color:white;
+    border:2px solid #F57C00;
+    border-radius:8px;
+    padding:14px;
+    font-size:16px;
+    margin-bottom:20px;
 }
 
-.btn-register:hover {
-  background: #16a34a;
+.form-control::placeholder{
+    color:#aaa;
 }
 
-.error-msg {
-  color: #f87171;
-  margin-bottom: 15px;
+/* BUTTON */
+.btn-register{
+    background:#F57C00;
+    color:black;
+    font-weight:bold;
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:8px;
+    font-size:17px;
 }
 
-.back-link {
-  color: #38bdf8;
-  text-decoration: none;
+.btn-register:hover{
+    background:#ff8c00;
 }
+
+/* LINKS */
+a{
+    color:#F57C00;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+.error-msg{
+    color:#ff6b6b;
+    margin-bottom:15px;
+}
+
 </style>
 </head>
+
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+<div class="top-bg">
+
+<!-- S CURVE DIVIDER -->
+<svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
+<path fill="#000"
+d="M0,80 
+C300,120 500,20 900,60
+C1200,90 1300,10 1440,0
+L1440,120
+L0,120 Z">
+</path>
+</svg>
+
+</div>
+
+<nav class="navbar px-4">
+<a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
 </nav>
 
-<!-- REGISTER FORM -->
 <div class="register-container">
-    <h2>Register</h2>
 
-    <?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
+<h2>Register</h2>
 
-    <form method="POST">
-        <input type="text" name="username" class="form-control" placeholder="Username" required>
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-        <button type="submit" name="register" class="btn-register">Register</button>
-    </form>
+<?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
 
-    <p class="mt-3">
-        <a href="index.php" class="back-link">Back to Login</a>
-    </p>
+<form method="POST">
+
+<input type="text" name="username" class="form-control" placeholder="Username" required>
+
+<input type="password" name="password" class="form-control" placeholder="Password" required>
+
+<button type="submit" name="register" class="btn-register">Register</button>
+
+</form>
+
+<p class="mt-3">
+<a href="index.php">Back to Login</a>
+</p>
+
 </div>
 
 </body>
