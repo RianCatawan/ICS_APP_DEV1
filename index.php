@@ -7,15 +7,13 @@ if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    /* ==============================
-       HARD CODED ADMIN ACCOUNT
-    ===============================*/
+   
     if($username === "admin" && $password === "password"){
 
         $_SESSION['username'] = "admin";
         $_SESSION['role'] = "admin";
 
-        // Check if admin exists in DB
+
         $check = $conn->query("SELECT id FROM users WHERE username='admin'");
         
         if($check->num_rows == 0){
@@ -28,7 +26,7 @@ if(isset($_POST['login'])){
             $admin_id = $row['id'];
         }
 
-        // Log admin login correctly
+
         $conn->query("INSERT INTO user_logs (user_id, action)
                       VALUES ($admin_id, 'LOGIN')");
 
@@ -36,9 +34,7 @@ if(isset($_POST['login'])){
         exit();
     }
 
-    /* ==============================
-       NORMAL USER LOGIN
-    ===============================*/
+
 
     $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
     $stmt->bind_param("s", $username);
@@ -57,7 +53,7 @@ if(isset($_POST['login'])){
 
             $user_id = $row['id'];
 
-            // Log user login correctly
+
             $conn->query("INSERT INTO user_logs (user_id, action)
                           VALUES ($user_id, 'LOGIN')");
 
@@ -80,95 +76,153 @@ if(isset($_POST['login'])){
 <title>HoopMatch | Login</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#000;
+    color:white;
 }
 
-.navbar {
-  background: #0f172a;
+/* ORANGE TOP BACKGROUND */
+.top-bg{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:300px;
+    background:#F57C00; /* basketball orange */
+    z-index:-5;
 }
 
-.navbar-brand {
-  color: #38bdf8 !important;
-  font-weight: bold;
+/* S CURVE LINE */
+.curve{
+    position:absolute;
+    bottom:-1px;
+    width:100%;
 }
 
-.login-container {
-  margin: auto;
-  padding: 40px;
-  background: #1e293b;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
+/* NAVBAR */
+.navbar{
+    background:transparent;
 }
 
-.login-container h2 {
-  margin-bottom: 25px;
-  color: #38bdf8;
+.navbar-brand{
+    color:white !important;
+    font-weight:bold;
+    font-size:24px;
 }
 
-.form-control {
-  background: #0f172a;
-  color: #e5e7eb;
-  border: 1px solid #38bdf8;
-  border-radius: 8px;
-  margin-bottom: 20px;
+/* LOGIN BOX */
+.login-container{
+    margin-top:210px;
+    background:#111;
+    padding:50px;
+    border-radius:12px;
+    max-width:450px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    box-shadow:0 10px 25px rgba(0,0,0,0.6);
 }
 
-.form-control::placeholder {
-  color: #cbd5f5;
+.login-container h2{
+    color:#F57C00;
+    margin-bottom:25px;
 }
 
-.btn-login {
-  background: #22c55e;
-  color: #020617;
-  font-weight: bold;
-  padding: 12px 25px;
-  border-radius: 10px;
-  border: none;
+/* INPUT FIELDS */
+.form-control{
+    background:#000;
+    color:white;
+    border:2px solid #F57C00;
+    border-radius:8px;
+    padding:14px;
+    font-size:16px;
+    margin-bottom:20px;
 }
 
-.btn-login:hover {
-  background: #16a34a;
+.form-control::placeholder{
+    color:#aaa;
 }
 
-.error-msg {
-  color: #f87171;
-  margin-bottom: 15px;
+/* LOGIN BUTTON */
+.btn-login{
+    background:#F57C00;
+    color:black;
+    font-weight:bold;
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:8px;
+    font-size:17px;
 }
+
+.btn-login:hover{
+    background:#ff8c00;
+}
+
+/* LINKS */
+a{
+    color:#F57C00;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+.error-msg{
+    color:#ff6b6b;
+    margin-bottom:15px;
+}
+
 </style>
 </head>
+
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+<div class="top-bg">
+
+<!-- S CURVE DIVIDER -->
+<svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
+<path fill="#000"
+d="M0,80 
+C300,120 500,20 900,60
+C1200,90 1300,10 1440,0
+L1440,120
+L0,120 Z">
+</path>
+</svg>
+
+</div>
+
+<nav class="navbar px-4">
+<a class="navbar-brand" href="index.php">HoopMatch</a>
 </nav>
 
-<!-- LOGIN FORM -->
 <div class="login-container">
-    <h2>Login</h2>
 
-    <?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
+<h2>Login</h2>
 
-    <form method="POST">
-        <input type="text" name="username" class="form-control" placeholder="Username" required>
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-        <button type="submit" name="login" class="btn-login">Login</button>
-    </form>
+<?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
 
-    <p class="mt-3">
-        <a href="register.php" style="color:#38bdf8;">Create Account</a>
-    </p>
+<form method="POST">
+
+<input type="text" name="username" class="form-control" placeholder="Username" required>
+
+<input type="password" name="password" class="form-control" placeholder="Password" required>
+
+<button type="submit" name="login" class="btn-login">Login</button>
+
+</form>
+
+<p class="mt-3">
+<a href="register.php">Create Account</a>
+</p>
+
 </div>
 
 </body>

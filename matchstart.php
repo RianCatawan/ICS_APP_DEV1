@@ -43,7 +43,6 @@ if(isset($_POST['game_ready']) && empty($message)){
     $insert->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -53,14 +52,54 @@ body{
     margin:0;
     padding:0;
     font-family: Arial;
-    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    background:#000; /* fallback black */
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
     color:white;
+    position:relative;
 }
 
+/* ORANGE TOP BACKGROUND */
+.top-bg{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:300px;
+    background:#F57C00;
+    z-index:-5;
+}
+
+/* CURVE DIVIDER */
+.curve{
+    position:absolute;
+    bottom:-1px;
+    width:100%;
+}
+
+/* BACK BUTTON */
+.back-btn{
+    position:absolute;
+    top:20px;
+    left:20px;
+    background:#111;
+    color:white;
+    padding:10px 18px;
+    border-radius:8px;
+    border:2px solid #F57C00;
+    text-decoration:none;
+    font-weight:bold;
+    z-index:10;
+}
+
+.back-btn:hover{
+    background:#F57C00;
+    color:black;
+}
+
+/* MATCH CARD */
 .match-card{
     background:#111;
     padding:40px;
@@ -70,12 +109,14 @@ body{
     box-shadow:0 0 25px rgba(0,0,0,0.6);
 }
 
+/* TITLE */
 .title{
     font-size:40px;
     margin-bottom:30px;
     color:#ff7b00;
 }
 
+/* TEAMS */
 .teams{
     display:flex;
     justify-content:space-between;
@@ -94,6 +135,7 @@ body{
     color:#ff7b00;
 }
 
+/* BUTTON */
 .start-btn{
     margin-top:30px;
     padding:12px 25px;
@@ -109,14 +151,31 @@ body{
     background:#ff9d3f;
 }
 
+/* MESSAGE */
 .message{
     margin-top:20px;
     color:#22c55e;
     font-weight:bold;
 }
+
 </style>
 </head>
 <body>
+
+<div class="top-bg">
+    <svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path fill="#000"
+        d="M0,80 
+        C300,120 500,20 900,60
+        C1200,90 1300,10 1440,0
+        L1440,120
+        L0,120 Z">
+        </path>
+    </svg>
+</div>
+
+<!-- BACK BUTTON -->
+<a href="match-start.php" class="back-btn">← Back</a>
 
 <div class="match-card">
 
