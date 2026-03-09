@@ -42,11 +42,59 @@ if(isset($_POST['edit_log'])){
 <meta charset="UTF-8">
 <title>User Logs | HoopMatch</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body {
+    background: #0f172a; /* match dashboard */
+    color: white;
+    font-family: Arial, sans-serif;
+    padding: 40px;
+    position: relative;
+}
+
+/* PAGE TITLE */
+.page-title{
+    font-size:28px;
+    margin-bottom:30px;
+}
+
+/* BACK BUTTON */
+.back-btn{
+    position:absolute;
+    top:20px;
+    left:20px;
+    background:#111;
+    color:white;
+    padding:10px 18px;
+    border-radius:8px;
+    border:2px solid #38bdf8;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.back-btn:hover{
+    background:#38bdf8;
+    color:black;
+}
+
+/* FORM AND TABLE CONTAINER */
+.container {
+    max-width: 1000px;
+    margin: auto;
+}
+
+/* TABLE STYLING */
+.table-dark th, .table-dark td {
+    color:white;
+}
+</style>
 </head>
-<body class="bg-dark text-light">
+<body>
+
+<!-- BACK BUTTON -->
+<a href="admin.php" class="back-btn">← Back</a>
 
 <div class="container py-5">
-    <h2 class="mb-4 text-info">User Activity Logs</h2>
+    <h2 class="page-title">User Activity Logs</h2>
 
     <!-- Add Log Form -->
     <form method="POST" class="mb-4 row g-2">
