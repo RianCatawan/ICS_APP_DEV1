@@ -2,10 +2,6 @@
 session_start();
 include "db.php";
 
-/* ===============================
-   OPTIONAL: CHECK LOGIN
-   (Remove this if not needed)
-================================*/
 if (!isset($_SESSION['user_id'])) {
     die("Access denied. Please login first.");
 }
@@ -126,7 +122,7 @@ L0,120 Z">
 </div>
 
 <div class="navbar">
-<a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+<a class="navbar-brand" href="index.php"> HoopMatch</a>
 </div>
 
 <!-- BACK BUTTON -->
