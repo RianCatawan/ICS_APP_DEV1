@@ -1,35 +1,41 @@
 <?php
+session_start();
 include "db.php";
 
-if(isset($_POST['register'])){
+if(isset($_POST['register'])) {
 
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = "user";
 
-    $sql = "INSERT INTO users (username, password, role)
-            VALUES ('$username', '$password', '$role')";
+    // Prepare statement to avoid SQL injection
+    $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $username, $password, $role);
 
-    if($conn->query($sql)){
-        // Optional: log registration
-        $conn->query("INSERT INTO user_logs (username, action)
-                      VALUES ('$username', 'REGISTER')");
+    if($stmt->execute()) {
+
+        // Log the registration in user_logs table
+        $stmt_log = $conn->prepare("INSERT INTO user_logs (user_id, action) VALUES (?, ?)");
+        $user_id = $stmt->insert_id; // get the last inserted ID
+        $action = "REGISTER";
+        $stmt_log->bind_param("is", $user_id, $action);
+        $stmt_log->execute();
+        $stmt_log->close();
 
         echo "<script>alert('Registered Successfully'); window.location='index.php';</script>";
     } else {
-        $error = "Error: " . $conn->error;
+        $error = "Error: " . $stmt->error;
     }
+
+    $stmt->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>HoopMatch | Register</title>
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <style>
 
 body{
@@ -39,7 +45,6 @@ body{
     color:white;
 }
 
-/* ORANGE TOP BACKGROUND */
 .top-bg{
     position:absolute;
     top:0;
@@ -50,7 +55,7 @@ body{
     z-index:-5;
 }
 
-/* S CURVE */
+
 .curve{
     position:absolute;
     bottom:-1px;
@@ -68,7 +73,6 @@ body{
     font-size:24px;
 }
 
-/* REGISTER BOX */
 .register-container{
     margin-top:210px;
     background:#111;
@@ -86,7 +90,6 @@ body{
     margin-bottom:25px;
 }
 
-/* INPUT */
 .form-control{
     background:#000;
     color:white;
@@ -101,7 +104,6 @@ body{
     color:#aaa;
 }
 
-/* BUTTON */
 .btn-register{
     background:#F57C00;
     color:black;
@@ -134,48 +136,22 @@ a:hover{
 
 </style>
 </head>
-
 <body>
 
-<div class="top-bg">
-
-<!-- S CURVE DIVIDER -->
-<svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
-<path fill="#000"
-d="M0,80 
-C300,120 500,20 900,60
-C1200,90 1300,10 1440,0
-L1440,120
-L0,120 Z">
-</path>
-</svg>
-
-</div>
-
-<nav class="navbar px-4">
-<a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
-</nav>
-
 <div class="register-container">
-
 <h2>Register</h2>
 
 <?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
 
 <form method="POST">
-
 <input type="text" name="username" class="form-control" placeholder="Username" required>
-
 <input type="password" name="password" class="form-control" placeholder="Password" required>
-
 <button type="submit" name="register" class="btn-register">Register</button>
-
 </form>
 
 <p class="mt-3">
-<a href="index.php">Back to Login</a>
+<a href="index.php" style="color:#F57C00;">Back to Login</a>
 </p>
-
 </div>
 
 </body>

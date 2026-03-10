@@ -179,7 +179,7 @@ body{
 
 <div class="match-card">
 
-<div class="title">🏀 MATCH START</div>
+<div class="title"> MATCH START</div>
 
 <div class="teams">
 <div class="team"><?php echo htmlspecialchars($team1_name); ?></div>

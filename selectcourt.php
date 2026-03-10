@@ -156,7 +156,7 @@ L0,120 Z">
 </div>
 
 <div class="navbar">
-<a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+<a class="navbar-brand" href="index.php">HoopMatch</a>
 </div>
 
 <a href="createteam.php" class="back-btn">⬅ Back</a>
@@ -171,9 +171,9 @@ L0,120 Z">
 
 <select id="courtSelect" name="court" required>
 <option value="">Select Court</option>
-<option value="Court 1">Court 1</option>
-<option value="Court 2">Court 2</option>
-<option value="Court 3">Court 3</option>
+<option value="Court 1">plaza</option>
+<option value="Court 2">tankulan</option>
+<option value="Court 3">saint joseph</option>
 </select>
 
 <button name="proceed">Proceed</button>
@@ -191,16 +191,16 @@ L0,120 Z">
 const map = L.map('map').setView([8.359735,124.869206],18);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-maxZoom:19,
+maxZoom:17,
 attribution:'© OpenStreetMap'
 }).addTo(map);
 
 /* Court Locations */
 
 const courts = {
-"Court 1":[8.360283,124.867513],
-"Court 2":[8.359219,124.868583],
-"Court 3":[8.359667,124.869179]
+"Court 1":[8.369345, 124.869061],
+"Court 2":[8.368307, 124.866327],
+"Court 3":[8.364335, 124.868374]
 };
 
 /* Add Markers */

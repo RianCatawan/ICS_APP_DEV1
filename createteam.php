@@ -8,21 +8,36 @@ if(!isset($_SESSION['user_id'])){
 }
 
 $user_id = $_SESSION['user_id'];
+$error = ""; // To display error messages
 
 if(isset($_POST['create'])){
 
-    $team_name = $_POST['team_name'];
-    $player_name = $_POST['player_name'];
+    $team_name = trim($_POST['team_name']);
+    $player_name = trim($_POST['player_name']);
     $game_type = $_POST['game_type'];
 
-    $stmt = $conn->prepare("INSERT INTO userteams (user_id, team_name, player_name, game_type)
-                            VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("isss", $user_id, $team_name, $player_name, $game_type);
-    $stmt->execute();
-    $stmt->close();
+    // Check if the team name already exists
+    $check = $conn->prepare("SELECT id FROM userteams WHERE team_name = ?");
+    $check->bind_param("s", $team_name);
+    $check->execute();
+    $check->store_result();
 
-    header("Location: selectcourt.php");
-    exit();
+    if($check->num_rows > 0){
+        $error = "Team name already exists. Please choose another name.";
+    } else {
+        // Insert the new team
+        $stmt = $conn->prepare("INSERT INTO userteams (user_id, team_name, player_name, game_type) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $user_id, $team_name, $player_name, $game_type);
+        if($stmt->execute()){
+            header("Location: selectcourt.php");
+            exit();
+        } else {
+            $error = "Error creating team: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+
+    $check->close();
 }
 ?>
 
@@ -31,9 +46,7 @@ if(isset($_POST['create'])){
 <head>
 <meta charset="UTF-8">
 <title>HoopMatch | Create Team</title>
-
 <style>
-
 body{
 margin:0;
 font-family:Arial, sans-serif;
@@ -132,13 +145,17 @@ button:hover{
 background:#ff8c00;
 transform:scale(1.05);
 }
+
+/* ERROR MESSAGE */
+.error-msg{
+color:#ff6b6b;
+font-weight:bold;
+}
 </style>
 </head>
-
 <body>
 
 <div class="top-bg">
-
 <svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
 <path fill="#000"
 d="M0,80 
@@ -148,7 +165,6 @@ L1440,120
 L0,120 Z">
 </path>
 </svg>
-
 </div>
 
 <div class="navbar">
@@ -160,6 +176,8 @@ L0,120 Z">
 <div class="card">
 
 <h2>Create Team</h2>
+
+<?php if($error) { echo "<div class='error-msg'>$error</div>"; } ?>
 
 <form method="POST">
 
