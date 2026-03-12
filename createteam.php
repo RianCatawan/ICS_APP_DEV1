@@ -168,7 +168,7 @@ L0,120 Z">
 </div>
 
 <div class="navbar">
-<a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+<a class="navbar-brand" href="index.php">HoopMatch</a>
 </div>
 
 <a href="matchstart.php" class="back-btn">⬅ Back</a>
@@ -194,7 +194,11 @@ L0,120 Z">
 </select>
 
 <button type="submit" name="create">Create Team</button>
-
+<br><br>
+<div style="margin-top:10px;">
+    <a href="match.php" style="text-decoration:none; color:blue; font-weight:bold;">
+        Already have a Team?
+    </a>
 </form>
 
 </div>
