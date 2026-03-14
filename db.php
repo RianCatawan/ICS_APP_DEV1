@@ -4,7 +4,7 @@
 $servername = "localhost";  // Usually localhost on XAMPP
 $username = "root";         // Default XAMPP username
 $password = "";             // Default XAMPP password is empty
-$dbname = "hoopmatch_db";  // Make sure you created this database
+$dbname = "university_hoops";  // Make sure you created this database
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

@@ -2,206 +2,252 @@
 session_start();
 include "db.php";
 
-if(!isset($_SESSION['user_id'])){
-    header("Location: index.php");
+// Redirect to login if not logged in
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$error = ""; // To display error messages
-
-if(isset($_POST['create'])){
-
-    $team_name = trim($_POST['team_name']);
-    $player_name = trim($_POST['player_name']);
+if (isset($_POST['create'])) {
+    $team_name = $_POST['team_name'];
     $game_type = $_POST['game_type'];
+    $creator = $_SESSION['username'];
 
-    // Check if the team name already exists
-    $check = $conn->prepare("SELECT id FROM userteams WHERE team_name = ?");
-    $check->bind_param("s", $team_name);
-    $check->execute();
-    $check->store_result();
-
-    if($check->num_rows > 0){
-        $error = "Team name already exists. Please choose another name.";
-    } else {
-        // Insert the new team
-        $stmt = $conn->prepare("INSERT INTO userteams (user_id, team_name, player_name, game_type) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $user_id, $team_name, $player_name, $game_type);
-        if($stmt->execute()){
-            header("Location: selectcourt.php");
-            exit();
-        } else {
-            $error = "Error creating team: " . $stmt->error;
-        }
-        $stmt->close();
+    // 1. Team Photo Upload Logic
+    $team_photo_name = ""; 
+    if (isset($_FILES['team_photo']) && $_FILES['team_photo']['error'] == 0) {
+        $target_dir = "uploads/";
+        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        
+        $file_ext = pathinfo($_FILES["team_photo"]["name"], PATHINFO_EXTENSION);
+        $team_photo_name = "team_" . time() . "_" . rand(100,999) . "." . $file_ext; 
+        move_uploaded_file($_FILES["team_photo"]["tmp_name"], $target_dir . $team_photo_name);
     }
 
-    $check->close();
+    // 2. Save the Team Header
+    $stmt = $conn->prepare("INSERT INTO teams (team_name, game_type, created_by, team_photo) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $team_name, $game_type, $creator, $team_photo_name);
+    
+    if ($stmt->execute()) {
+        $team_id = $conn->insert_id; 
+
+        // --- NEW: AUTO-ACTIVATE THIS TEAM FOR THE USER ---
+        // This prevents the "select_team_first" error
+        $update_active = $conn->prepare("UPDATE players SET active_team_id = ? WHERE student_id = ?");
+        $update_active->bind_param("is", $team_id, $creator);
+        $update_active->execute();
+
+        // 3. Save each player in the team
+        $names = $_POST['player_name'];
+        $ages = $_POST['age'];
+        $heights = $_POST['height'];
+        $roles = $_POST['role'];
+
+        $stmt_player = $conn->prepare("INSERT INTO team_players (team_id, player_name, age, height, role) VALUES (?, ?, ?, ?, ?)");
+
+        for ($i = 0; $i < count($names); $i++) {
+            $stmt_player->bind_param("isiss", $team_id, $names[$i], $ages[$i], $heights[$i], $roles[$i]);
+            $stmt_player->execute();
+        }
+
+        // Redirect specifically to the team selection with the active ID
+        echo "<script>alert('Team Created and Activated!'); window.location.href='selectdatetime.php?team_id=$team_id&sid=$creator';</script>";
+    }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>HoopMatch | Create Team</title>
-<style>
-body{
-margin:0;
-font-family:Arial, sans-serif;
-background:#000;
-color:white;
-}
+    <meta charset="UTF-8">
+    <title>Create Team</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #0d47a1; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: white;
+            padding: 40px;
+        }
 
-/* ORANGE TOP BACKGROUND */
-.top-bg{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:300px;
-background:#F57C00;
-z-index:-5;
-}
+        .form-label {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
 
-/* S CURVE */
-.curve{
-position:absolute;
-bottom:-1px;
-width:100%;
-}
+        .player-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            min-height: 250px;
+        }
 
-/* NAVBAR */
-.navbar{
-padding:20px 40px;
-}
+        .player-card {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+        }
 
-.navbar-brand{
-color:white;
-font-weight:bold;
-font-size:24px;
-text-decoration:none;
-}
+        .sample-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            opacity: 0.5;
+        }
 
-/* BACK BUTTON */
-.back-btn{
-position:absolute;
-top:25px;
-right:40px;
-padding:8px 18px;
-border-radius:8px;
-border:2px solid #F57C00;
-color:#F57C00;
-text-decoration:none;
-font-weight:bold;
-transition:0.3s;
-}
+        .player-card b {
+            display: block;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #FFD700;
+            padding-bottom: 5px;
+            font-size: 0.85rem;
+        }
 
-.back-btn:hover{
-background:#F57C00;
-color:black;
-}
+        .form-control {
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 0.8rem;
+        }
 
-.card{
-margin-top:170px;
-background:#111;
-padding:55px;
-border-radius:12px;
-width:480px;
-margin-left:auto;
-margin-right:auto;
-display:flex;
-flex-direction:column;
-gap:25px;
-box-shadow:0 10px 25px rgba(0,0,0,0.6);
-text-align:center;
-}
+        .btn-create {
+            background: #FFD700;
+            color: #000;
+            font-weight: bold;
+            margin-top: 30px;
+            padding: 12px;
+            border: none;
+        }
 
-/* INPUTS */
-input, select{
-padding:15px;
-border-radius:10px;
-border:2px solid #F57C00;
-background:#000;
-color:white;
-font-size:16px;
-}
+        #sizeSelectorContainer {
+            margin-top: 0;
+            display: none;
+        }
 
-/* BUTTON */
-button{
-padding:18px;
-border:none;
-border-radius:10px;
-background:#F57C00;
-font-weight:bold;
-font-size:19px;
-cursor:pointer;
-transition:0.3s;
-width:100%;
-}
-
-button:hover{
-background:#ff8c00;
-transform:scale(1.05);
-}
-
-/* ERROR MESSAGE */
-.error-msg{
-color:#ff6b6b;
-font-weight:bold;
-}
-</style>
+        /* Styling for the new Team Photo Input Box */
+        .photo-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 5px;
+            padding: 5px;
+        }
+    </style>
 </head>
-<body>
+<body onload="showPlaceholder()">
 
-<div class="top-bg">
-<svg class="curve" viewBox="0 0 1440 120" preserveAspectRatio="none">
-<path fill="#000"
-d="M0,80 
-C300,120 500,20 900,60
-C1200,90 1300,10 1440,0
-L1440,120
-L0,120 Z">
-</path>
-</svg>
-</div>
+    <div class="container">
+        <h2 class="mb-4">CREATE TEAM</h2>
 
-<div class="navbar">
-<a class="navbar-brand" href="index.php">HoopMatch</a>
-</div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Team Name</label>
+                    <input type="text" name="team_name" class="form-control" placeholder="Enter Team Name" required>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Game Type</label>
+                    <select name="game_type" class="form-control" id="gameType" onchange="handleGameTypeChange()" required>
+                        <option value="">Select Game Type</option>
+                        <option value="1v1">1v1 (+1 Sub)</option>
+                        <option value="2v2">2v2 (+1 Sub)</option>
+                        <option value="3v3">3v3 (+1 Sub)</option>
+                        <option value="4v4">4v4 (+1 Sub)</option>
+                        <option value="5v5">5v5 (Multiple Options)</option>
+                    </select>
+                </div>
 
-<a href="matchstart.php" class="back-btn">⬅ Back</a>
+                <div class="col-md-3">
+                    <label class="form-label">Team Photo</label>
+                    <div class="photo-box">
+                        <input type="file" name="team_photo" class="form-control form-control-sm" accept="image/*">
+                    </div>
+                </div>
 
-<div class="card">
+                <div class="col-md-3" id="sizeSelectorContainer">
+                    <label class="form-label">Player Count (5v5)</label>
+                    <select id="playerSize" class="form-control" onchange="generateFields()">
+                        <option value="5">5 Players</option>
+                        <option value="10">10 Players</option>
+                        <option value="15">15 Players</option>
+                    </select>
+                </div>
+            </div>
 
-<h2>Create Team</h2>
+            <div class="player-grid" id="playerFields">
+                </div>
 
-<?php if($error) { echo "<div class='error-msg'>$error</div>"; } ?>
+            <button type="submit" class="btn btn-create w-100" name="create">CREATE TEAM</button>
+        </form>
+    </div>
 
-<form method="POST">
+    <script>
+        function showPlaceholder() {
+            const container = document.getElementById("playerFields");
+            container.innerHTML = "";
+            for (let i = 1; i <= 5; i++) {
+                container.innerHTML += `
+                    <div class="player-card sample-card">
+                        <b>Sample Player ${i}</b>
+                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
+                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
+                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
+                        <p class="text-center mt-3" style="font-size:10px;">Select Game Type to Edit</p>
+                    </div>
+                `;
+            }
+        }
 
-<input type="text" name="team_name" placeholder="Team Name" required>
+        function handleGameTypeChange() {
+            const type = document.getElementById("gameType").value;
+            const sizeContainer = document.getElementById("sizeSelectorContainer");
+            
+            if (type === "5v5") {
+                sizeContainer.style.display = "block";
+            } else {
+                sizeContainer.style.display = "none";
+            }
+            
+            if (!type) {
+                showPlaceholder();
+            } else {
+                generateFields();
+            }
+        }
 
-<input type="text" name="player_name" placeholder="Player Name" required>
+        function generateFields() {
+            const type = document.getElementById("gameType").value;
+            const container = document.getElementById("playerFields");
+            let count = 0;
 
-<select name="game_type" required>
-<option value="">Select Game Type</option>
-<option value="1v1">1v1</option>
-<option value="2v2">2v2</option>
-<option value="3v3">3v3</option>
-<option value="5v5">5v5</option>
-</select>
+            if (type === "1v1") count = 2; 
+            else if (type === "2v2") count = 3; 
+            else if (type === "3v3") count = 4; 
+            else if (type === "4v4") count = 5; 
+            else if (type === "5v5") {
+                count = parseInt(document.getElementById("playerSize").value);
+            }
 
-<button type="submit" name="create">Create Team</button>
-<br><br>
-<div style="margin-top:10px;">
-    <a href="match.php" style="text-decoration:none; color:blue; font-weight:bold;">
-        Already have a Team?
-    </a>
-</form>
+            container.innerHTML = "";
 
-</div>
-
+            for (let i = 1; i <= count; i++) {
+                let label = (i === count && type !== "5v5") ? `Sub Player` : `Player ${i}`;
+                
+                container.innerHTML += `
+                    <div class="player-card">
+                        <b>${label}</b>
+                        <input type="text" name="player_name[]" class="form-control" placeholder="Name" required>
+                        <input type="number" name="age[]" class="form-control" placeholder="Age" required>
+                        <input type="text" name="height[]" class="form-control" placeholder="Height" required>
+                        <input type="text" name="role[]" class="form-control" placeholder="Role" required>
+                    </div>
+                `;
+            }
+        }
+    </script>
 </body>
 </html>
