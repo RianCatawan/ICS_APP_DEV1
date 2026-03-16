@@ -115,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <button type="submit" class="btn-reserve">CONFIRM RESERVATION</button>
+       <a href="matchmaking.php">SELECT MATCH</a>
     </form>
 </div>
 
