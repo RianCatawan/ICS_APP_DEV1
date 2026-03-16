@@ -8,7 +8,7 @@ include "db.php";
 <title>All Matches | HoopMatch</title>
 <style>
 body{
-    background:#0f172a; /* dashboard guide background */
+    background:#0f172a; 
     font-family:Arial;
     color:white;
     margin:0;
@@ -22,7 +22,7 @@ body{
     margin-bottom:30px;
 }
 
-/* BACK BUTTON */
+
 .back-btn{
     position:absolute;
     top:20px;
