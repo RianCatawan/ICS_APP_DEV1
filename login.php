@@ -6,6 +6,15 @@ if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    // 1. Check for the hardcoded Admin credentials first
+    if($username === 'admin' && $password === 'password'){
+        $_SESSION['username'] = 'admin';
+        $_SESSION['role'] = 'admin';
+        header("Location: admin.php"); // Create this page for admin tasks
+        exit();
+    }
+
+    // 2. Otherwise, check the database for regular players
     $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
@@ -13,12 +22,25 @@ if(isset($_POST['login'])){
 
     if($result->num_rows > 0){
         $row = $result->fetch_assoc();
+        
+        // Using password_verify for security on registered accounts
         if(password_verify($password, $row['password'])){
             $_SESSION['username'] = $row['username'];
+            $_SESSION['role'] = $row['role'] ?? 'player';
+            
             header("Location: profile.php?sid=" . urlencode($row['username']));
             exit();
-        } else { $error = "Invalid Password"; }
-    } else { $error = "User Not Found"; }
+        } else { 
+            $error = "Invalid Password"; 
+        }
+    } else { 
+        $error = "User Not Found"; 
+    }
+    // Record the Login Activity
+$log_action = "Logged In";
+$log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
+$log_stmt->bind_param("ss", $row['username'], $log_action);
+$log_stmt->execute();
 }
 ?>
 <!DOCTYPE html>
@@ -81,7 +103,7 @@ if(isset($_POST['login'])){
 <div class="top-bar"></div>
 
 <nav class="navbar px-4">
-    <a class="navbar-brand" href="index.php">🏀 HoopMatch</a>
+    <a class="navbar-brand" href="index.php"> HoopMatch</a>
 </nav>
 
 <div class="login-container">

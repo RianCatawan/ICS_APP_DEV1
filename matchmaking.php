@@ -35,9 +35,27 @@ $matches = $stmt->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background: #0d47a1; color: white; padding: 40px; font-family: 'Segoe UI', sans-serif; }
+        body { background: #0d47a1; color: white; padding: 40px; font-family: 'Segoe UI', sans-serif; position: relative; }
         .header-section { border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 30px; padding-bottom: 10px; }
         
+        /* BACK BUTTON STYLE */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background: #000;
+            color: #FFD700;
+            padding: 8px 20px;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .back-btn:hover { background: #FFD700; color: #000; }
+
         .match-scroll {
             display: flex;
             overflow-x: auto;
@@ -60,7 +78,6 @@ $matches = $stmt->get_result();
         
         .my-match { border-color: #00ff88 !important; background: rgba(0, 255, 136, 0.05); }
 
-        /* --- NEW: TEAM PHOTO STYLES --- */
         .team-photo-container {
             width: 80px;
             height: 80px;
@@ -81,7 +98,6 @@ $matches = $stmt->get_result();
             object-fit: cover;
         }
         .team-photo-container i { font-size: 2.5rem; color: #FFD700; }
-        /* ------------------------------ */
         
         .team-title { text-align: center; color: #FFD700; font-weight: bold; border-bottom: 1px solid rgba(255,215,0,0.3); margin-bottom: 10px; padding-bottom: 5px; }
         .my-match .team-title { color: #00ff88; border-bottom-color: #00ff88; }
@@ -96,14 +112,15 @@ $matches = $stmt->get_result();
 </head>
 <body>
 
+<a href="javascript:history.back()" class="back-btn">← BACK</a>
+
 <div class="container">
     <div class="header-section d-flex justify-content-between align-items-center">
         <div>
             <h2><i class="bi bi-trophy-fill text-warning"></i> GLOBAL MATCHMAKING</h2>
             <p class="text-white-50">Viewing all court reservations currently filed.</p>
         </div>
-        <div class="text-end">
-            <small class="text-warning">ACTIVE TEAM:</small><br>
+        <div class="text-end" style="margin-right: 180px;"> <small class="text-warning">ACTIVE TEAM:</small><br>
             <span class="badge bg-warning text-dark"><?php echo strtoupper($user_info['team_name'] ?? 'None'); ?></span>
         </div>
     </div>
