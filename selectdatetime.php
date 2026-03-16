@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 include "db.php";
@@ -23,7 +22,6 @@ if (!empty($team_id)) {
         $team_name = $row['team_name'];
     }
 } else {
-    // If no ID is found, redirect back to profile to pick one
     header("Location: profile.php?error=select_team_first");
     exit();
 }
@@ -38,12 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Update Active Team for the player
     $updateActive = $conn->prepare("UPDATE players SET active_team_id = ? WHERE student_id = ?");
     $updateActive->bind_param("is", $team_id, $username);
     $updateActive->execute();
 
-    // Insert Reservation
     $stmt = $conn->prepare("INSERT INTO reservations (team_id, username, reservation_date, selected_time, status) VALUES (?, ?, ?, ?, 'open')");
     $stmt->bind_param("isss", $team_id, $username, $reservation_date, $selected_time);
 
@@ -63,10 +59,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Reserve Court</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background: #0d47a1; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px; }
+        body { background: #0d47a1; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px; position: relative; }
         .reservation-container { max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .form-label { font-weight: bold; color: #FFD700; text-transform: uppercase; margin-bottom: 8px; display: block; }
         
+        /* NAVIGATION BUTTONS */
+        .nav-actions {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 160px;
+        }
+        .back-btn {
+            background: #000;
+            color: #FFD700;
+            padding: 8px 15px;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+        .find-match-btn {
+            background: #FFD700;
+            color: #000;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+        .back-btn:hover { background: #FFD700; color: #000; }
+        .find-match-btn:hover { background: #fff; transform: translateY(-2px); }
+
         /* Fixed Team Display */
         .fixed-team-box { background: rgba(255, 215, 0, 0.1); border: 2px dashed #FFD700; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px; }
         .fixed-team-box h4 { margin: 0; color: #FFD700; font-weight: 800; }
@@ -76,17 +110,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .time-slot.selected { background: #FFD700; color: #000; font-weight: bold; }
         
         .form-control { border-radius: 5px; font-weight: 500; }
-        .btn-reserve { background: #FFD700; color: #000; font-weight: 800; padding: 15px; margin-top: 30px; border: none; width: 100%; border-radius: 8px; font-size: 1.2rem; }
+        .btn-reserve { background: #FFD700; color: #000; font-weight: 800; padding: 15px; margin-top: 30px; border: none; width: 100%; border-radius: 8px; font-size: 1.2rem; transition: 0.3s; }
+        .btn-reserve:hover { background: #fff; }
     </style>
 </head>
 <body>
+
+<div class="nav-actions">
+    <a href="javascript:history.back()" class="back-btn">← BACK</a>
+    <a href="matchmaking.php" class="find-match-btn">Find Match</a>
+</div>
 
 <div class="container reservation-container">
     <h2 class="text-center mb-4" style="color: #FFD700; font-weight: 900;">COURT RESERVATION</h2>
     
     <div class="fixed-team-box">
         <small class="text-white-50">RESERVING FOR TEAM</small>
-        <h4><?php echo strtoupper($team_name); ?> (ID: <?php echo $team_id; ?>)</h4>
+        <h4><?php echo strtoupper($team_name); ?></h4>
     </div>
 
     <form action="" method="POST">
@@ -115,7 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <button type="submit" class="btn-reserve">CONFIRM RESERVATION</button>
-       <a href="matchmaking.php">SELECT MATCH</a>
     </form>
 </div>
 

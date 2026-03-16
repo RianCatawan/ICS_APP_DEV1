@@ -45,7 +45,24 @@ $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
     <style>
         body { background: #0d47a1; color: white; padding: 20px; font-family: 'Segoe UI', sans-serif; }
         .scroll-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; }
-        
+        .login-btn-top {
+            background: #FFD700;
+            color: #000;
+            font-weight: 800;
+            padding: 8px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            border: 2px solid #FFD700;
+        }
+        .login-btn-top:hover {
+            background: transparent;
+            color: #FFD700;
+        }
+
+        .scroll-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; }
         /* HISTORY CARD STYLE */
         .history-card {
             min-width: 300px;
@@ -78,10 +95,17 @@ $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="bi bi-dribbble text-warning"></i> NBSC HOOPS</h2>
-        <span class="badge bg-warning text-dark p-2">TEAM: <?php echo strtoupper($user_info['team_name'] ?? 'NONE'); ?></span>
+        <div>
+            <h2 class="fw-bold mb-0"><i class="bi bi-dribbble text-warning"></i> NBSC BASKETBALL MATCH MAKER</h2>
+            <span class="badge bg-warning text-dark p-2 mt-1">TEAM: <?php echo strtoupper($user_info['team_name'] ?? 'NONE'); ?></span>
+        </div>
+        
+        <div>
+            <a href="login.php" class="login-btn-top">Login</a>
+        </div>
     </div>
-
+<div>
+         
     <h4 class="mb-3 text-warning"><i class="bi bi-trophy-fill"></i> Match History & Winners</h4>
     <div class="scroll-container mb-5">
         <?php if($history_matches->num_rows > 0): ?>
@@ -159,7 +183,7 @@ $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
     </div>
 
     <div class="mt-5 pb-5">
-        <a href="login.php?sid=<?php echo $current_user; ?>" class="btn btn-warning fw-bold">CREATE PROFILE</a>
+        <a href="register.php?sid=<?php echo $current_user; ?>" class="btn btn-warning fw-bold">CREATE PROFILE</a>
         
     </div>
 </div>

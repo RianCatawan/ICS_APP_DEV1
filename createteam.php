@@ -32,7 +32,6 @@ if (isset($_POST['create'])) {
         $team_id = $conn->insert_id; 
 
         // --- NEW: AUTO-ACTIVATE THIS TEAM FOR THE USER ---
-        // This prevents the "select_team_first" error
         $update_active = $conn->prepare("UPDATE players SET active_team_id = ? WHERE student_id = ?");
         $update_active->bind_param("is", $team_id, $creator);
         $update_active->execute();
@@ -50,7 +49,6 @@ if (isset($_POST['create'])) {
             $stmt_player->execute();
         }
 
-        // Redirect specifically to the team selection with the active ID
         echo "<script>alert('Team Created and Activated!'); window.location.href='selectdatetime.php?team_id=$team_id&sid=$creator';</script>";
     }
 }
@@ -68,6 +66,28 @@ if (isset($_POST['create'])) {
             font-family: 'Segoe UI', Arial, sans-serif;
             color: white;
             padding: 40px;
+            position: relative; /* Added for absolute positioning of back button */
+        }
+
+        /* BACK BUTTON STYLE */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background: #000;
+            color: #FFD700;
+            padding: 8px 20px;
+            border: 2px solid #FFD700;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #FFD700;
+            color: #000;
         }
 
         .form-label {
@@ -128,7 +148,6 @@ if (isset($_POST['create'])) {
             display: none;
         }
 
-        /* Styling for the new Team Photo Input Box */
         .photo-box {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 215, 0, 0.3);
@@ -140,6 +159,8 @@ if (isset($_POST['create'])) {
 <body onload="showPlaceholder()">
 
     <div class="container">
+        <a href="javascript:history.back()" class="back-btn">← BACK</a>
+
         <h2 class="mb-4">CREATE TEAM</h2>
 
         <form method="POST" enctype="multipart/form-data">
@@ -178,8 +199,7 @@ if (isset($_POST['create'])) {
                 </div>
             </div>
 
-            <div class="player-grid" id="playerFields">
-                </div>
+            <div class="player-grid" id="playerFields"></div>
 
             <button type="submit" class="btn btn-create w-100" name="create">CREATE TEAM</button>
         </form>
