@@ -27,7 +27,7 @@ if (!empty($team_id)) {
 }
 
 // 3. Handle Form Submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm'])) {
     $reservation_date = $_POST['reservation_date'];
     $selected_time = $_POST['selected_time'];
 
@@ -52,118 +52,190 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reserve Court</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserve Court | NBSC</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background: #0d47a1; font-family: 'Segoe UI', sans-serif; color: white; padding: 40px; position: relative; }
-        .reservation-container { max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .form-label { font-weight: bold; color: #FFD700; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        
-        /* NAVIGATION BUTTONS */
-        .nav-actions {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 160px;
+        :root {
+            --nbsc-blue: #0d47a1;
+            --nbsc-gold: #FFD700;
+            --glass-bg: rgba(255, 255, 255, 0.95);
         }
-        .back-btn {
-            background: #000;
-            color: #FFD700;
-            padding: 8px 15px;
-            border: 2px solid #FFD700;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            text-align: center;
-            font-size: 0.85rem;
-            transition: 0.3s;
+
+        body { 
+            background-image: url('Covered Court.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', sans-serif;
+            color: #2c3e50;
+            padding-bottom: 50px;
         }
-        .find-match-btn {
-            background: #FFD700;
-            color: #000;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            text-align: center;
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 35px;
+            margin-top: 30px;
+            border-bottom: 6px solid var(--nbsc-gold);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .section-header {
+            color: var(--nbsc-blue);
+            font-weight: 850;
             text-transform: uppercase;
-            font-size: 0.8rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* TEAM BADGE */
+        .team-banner {
+            background: #f8f9fa;
+            border: 2px solid var(--nbsc-gold);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .team-banner small { font-weight: 800; color: #7f8c8d; letter-spacing: 1px; }
+        .team-banner h3 { color: var(--nbsc-blue); font-weight: 900; margin: 0; }
+
+        /* LABELS & INPUTS */
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--nbsc-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-control[readonly] { background-color: #fff; cursor: default; font-weight: 700; border-color: var(--nbsc-gold); }
+
+        /* TIME GRID */
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .time-slot:hover { border-color: var(--nbsc-blue); background: #f0f7ff; }
+        .time-slot.selected {
+            background: var(--nbsc-blue);
+            color: white;
+            border-color: var(--nbsc-blue);
+            box-shadow: 0 4px 10px rgba(13, 71, 161, 0.3);
+        }
+
+        .btn-confirm {
+            background: var(--nbsc-blue);
+            color: white;
+            font-weight: 800;
+            padding: 18px;
+            border-radius: 12px;
+            border: none;
+            width: 100%;
+            margin-top: 40px;
+            letter-spacing: 1px;
             transition: 0.3s;
         }
-        .back-btn:hover { background: #FFD700; color: #000; }
-        .find-match-btn:hover { background: #fff; transform: translateY(-2px); }
-
-        /* Fixed Team Display */
-        .fixed-team-box { background: rgba(255, 215, 0, 0.1); border: 2px dashed #FFD700; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px; }
-        .fixed-team-box h4 { margin: 0; color: #FFD700; font-weight: 800; }
-
-        .time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 15px; }
-        .time-slot { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.2); padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .time-slot.selected { background: #FFD700; color: #000; font-weight: bold; }
-        
-        .form-control { border-radius: 5px; font-weight: 500; }
-        .btn-reserve { background: #FFD700; color: #000; font-weight: 800; padding: 15px; margin-top: 30px; border: none; width: 100%; border-radius: 8px; font-size: 1.2rem; transition: 0.3s; }
-        .btn-reserve:hover { background: #fff; }
+        .btn-confirm:hover { background: #08367a; transform: translateY(-2px); color: white;}
     </style>
 </head>
-<body>
+<body onload="generateSlots()">
 
-<div class="nav-actions">
-    <a href="javascript:history.back()" class="back-btn">← BACK</a>
-    <a href="matchmaking.php" class="find-match-btn">Find Match</a>
-</div>
-
-<div class="container reservation-container">
-    <h2 class="text-center mb-4" style="color: #FFD700; font-weight: 900;">COURT RESERVATION</h2>
-    
-    <div class="fixed-team-box">
-        <small class="text-white-50">RESERVING FOR TEAM</small>
-        <h4><?php echo strtoupper($team_name); ?></h4>
+<div class="container" style="max-width: 900px;">
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a href="javascript:history.back()" class="btn btn-dark fw-bold px-4"><i class="bi bi-arrow-left"></i> BACK</a>
+        <a href="matchmaking.php" class="btn btn-warning fw-bold px-4">Find Match <i class="bi bi-search"></i></a>
     </div>
 
-    <form action="" method="POST">
-        <input type="hidden" name="team_id" value="<?php echo htmlspecialchars($team_id); ?>">
+    <div class="glass-card">
+        <h2 class="section-header"><i class="bi bi-calendar-check"></i> Court Reservation</h2>
 
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <label class="form-label">Step 1: Reservation Date</label>
-                <input type="date" name="reservation_date" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
-            </div>
-            <div class="col-md-6 mb-4">
-                <label class="form-label">Confirmed Time Slot</label>
-                <input type="text" name="selected_time" id="finalTime" class="form-control" placeholder="Select a slot below" readonly required>
-            </div>
+        <div class="team-banner shadow-sm">
+            <small>RESERVING FOR SQUAD</small>
+            <h3><?php echo strtoupper($team_name); ?></h3>
         </div>
 
-        <label class="form-label">Step 2: Pick a Match Slot</label>
-        <div class="time-grid" id="timeGrid"></div>
+        <form action="" method="POST">
+            <input type="hidden" name="team_id" value="<?php echo htmlspecialchars($team_id); ?>">
 
-        <div class="mt-4 pt-3 border-top border-secondary">
-            <label class="form-label">Or Use Custom Time</label>
-            <div class="row g-2">
-                <div class="col-auto"><input type="time" id="customTimeInput" class="form-control"></div>
-                <div class="col-auto"><button type="button" class="btn btn-outline-warning" onclick="useCustomTime()">Apply</button></div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="info-label">Step 1: Choose Date</label>
+                    <input type="date" name="reservation_date" class="form-control form-control-lg" required min="<?php echo date('Y-m-d'); ?>">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="info-label">Current Selection</label>
+                    <input type="text" name="selected_time" id="finalTime" class="form-control form-control-lg" placeholder="Select a slot below" readonly required>
+                </div>
+
+                <div class="col-12">
+                    <label class="info-label">Step 2: Pick a Match Slot (90-Min Sessions)</label>
+                    <div class="time-grid" id="timeGrid"></div>
+                </div>
+
+                <div class="col-12">
+                    <div class="p-3 rounded bg-light border mt-2">
+                        <label class="info-label text-muted">Or Use Custom Start Time</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <input type="time" id="customTimeInput" class="form-control">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-outline-primary fw-bold" onclick="useCustomTime()">Apply Custom</button>
+                            </div>
+                            <div class="col text-end">
+                                <span class="badge bg-secondary opacity-50">Manual Entry</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <button type="submit" class="btn-reserve">CONFIRM RESERVATION</button>
-    </form>
+            <button type="submit" name="confirm" class="btn-confirm shadow">
+                <i class="bi bi-check-circle-fill"></i> CONFIRM COURT RESERVATION
+            </button>
+        </form>
+    </div>
 </div>
 
 <script>
     function generateSlots() {
         const grid = document.getElementById('timeGrid');
-        const startHour = 4; const endHour = 22; const durationMin = 90;
+        const startHour = 4; // 4 AM
+        const endHour = 22;  // 10 PM
+        const durationMin = 90;
+        
         let current = new Date();
         current.setHours(startHour, 0, 0);
+        
         const endLimit = new Date();
         endLimit.setHours(endHour, 0, 0);
 
@@ -174,8 +246,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if (current <= endLimit) {
                 const slotDiv = document.createElement('div');
-                slotDiv.className = 'time-slot';
-                slotDiv.innerHTML = `${startTime}<br>to<br>${endTime}`;
+                slotDiv.className = 'time-slot shadow-sm';
+                slotDiv.innerHTML = `<i class="bi bi-clock"></i><br>${startTime}<br>—<br>${endTime}`;
+                
                 slotDiv.onclick = function() {
                     document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                     this.classList.add('selected');
@@ -193,11 +266,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             const ampm = h >= 12 ? 'PM' : 'AM';
             const displayH = h % 12 || 12;
             const formatted = `${displayH}:${m} ${ampm}`;
+            
             document.getElementById('finalTime').value = formatted;
+            // Clear selections in the grid
             document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
         }
     }
-    window.onload = generateSlots;
 </script>
 </body>
 </html>

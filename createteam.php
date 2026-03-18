@@ -31,7 +31,7 @@ if (isset($_POST['create'])) {
     if ($stmt->execute()) {
         $team_id = $conn->insert_id; 
 
-        // --- NEW: AUTO-ACTIVATE THIS TEAM FOR THE USER ---
+        // AUTO-ACTIVATE THIS TEAM FOR THE USER
         $update_active = $conn->prepare("UPDATE players SET active_team_id = ? WHERE student_id = ?");
         $update_active->bind_param("is", $team_id, $creator);
         $update_active->execute();
@@ -58,140 +58,161 @@ if (isset($_POST['create'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Team</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Team | NBSC Court</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body {
-            background: #0d47a1; 
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: white;
+        :root {
+            --nbsc-blue: #0d47a1;
+            --nbsc-gold: #FFD700;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body { 
+            background-image: url('Covered Court.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: #2c3e50;
+            padding-bottom: 50px;
+        }
+
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 40px;
-            position: relative; /* Added for absolute positioning of back button */
+            margin-top: 30px;
+            border-bottom: 6px solid var(--nbsc-gold);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
         }
 
-        /* BACK BUTTON STYLE */
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            background: #000;
-            color: #FFD700;
-            padding: 8px 20px;
-            border: 2px solid #FFD700;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-
-        .back-btn:hover {
-            background: #FFD700;
-            color: #000;
-        }
-
-        .form-label {
-            font-weight: bold;
+        .section-title {
+            color: var(--nbsc-blue);
+            font-weight: 850;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-size: 0.9rem;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--nbsc-gold);
+            padding-left: 15px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--nbsc-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            font-weight: 600;
+            color: #333;
         }
 
         .player-grid {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-            min-height: 250px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .player-card {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 15px;
-            border-radius: 8px;
-            width: 200px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.2s;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: 0.3s;
         }
 
-        .sample-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            opacity: 0.5;
+        .player-card:hover {
+            border-color: var(--nbsc-blue);
+            transform: translateY(-3px);
         }
 
         .player-card b {
             display: block;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #FFD700;
+            color: var(--nbsc-blue);
+            border-bottom: 2px solid #f1f1f1;
+            margin-bottom: 15px;
             padding-bottom: 5px;
-            font-size: 0.85rem;
-        }
-
-        .form-control {
-            margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.9);
-            font-size: 0.8rem;
+            font-size: 0.95rem;
         }
 
         .btn-create {
-            background: #FFD700;
-            color: #000;
-            font-weight: bold;
-            margin-top: 30px;
-            padding: 12px;
+            background: var(--nbsc-blue);
+            color: white;
+            font-weight: 800;
+            padding: 15px;
+            border-radius: 12px;
             border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-        #sizeSelectorContainer {
-            margin-top: 0;
-            display: none;
+        .btn-create:hover {
+            background: #08367a;
+            box-shadow: 0 5px 15px rgba(13, 71, 161, 0.4);
+            color: white;
         }
 
-        .photo-box {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 5px;
-            padding: 5px;
+        .placeholder-box {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px;
+            background: rgba(0,0,0,0.03);
+            border: 2px dashed #ccc;
+            border-radius: 15px;
+            color: #888;
         }
     </style>
 </head>
 <body onload="showPlaceholder()">
 
-    <div class="container">
-        <a href="javascript:history.back()" class="back-btn">← BACK</a>
+<div class="container">
+    <div class="d-flex justify-content-between mt-4">
+        <a href="javascript:history.back()" class="btn btn-dark fw-bold"><i class="bi bi-arrow-left"></i> BACK</a>
+    </div>
 
-        <h2 class="mb-4">CREATE TEAM</h2>
+    <div class="glass-container">
+        <h2 class="section-title">Team Registration</h2>
 
         <form method="POST" enctype="multipart/form-data">
-            <div class="row align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">Team Name</label>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="info-label">Team Name</label>
                     <input type="text" name="team_name" class="form-control" placeholder="Enter Team Name" required>
                 </div>
                 
-                <div class="col-md-3">
-                    <label class="form-label">Game Type</label>
-                    <select name="game_type" class="form-control" id="gameType" onchange="handleGameTypeChange()" required>
-                        <option value="">Select Game Type</option>
+                <div class="col-md-4">
+                    <label class="info-label">Game Category</label>
+                    <select name="game_type" class="form-select" id="gameType" onchange="handleGameTypeChange()" required>
+                        <option value="">-- Choose Category --</option>
                         <option value="1v1">1v1 (+1 Sub)</option>
                         <option value="2v2">2v2 (+1 Sub)</option>
                         <option value="3v3">3v3 (+1 Sub)</option>
                         <option value="4v4">4v4 (+1 Sub)</option>
-                        <option value="5v5">5v5 (Multiple Options)</option>
+                        <option value="5v5">5v5 (Standard)</option>
                     </select>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Team Photo</label>
-                    <div class="photo-box">
-                        <input type="file" name="team_photo" class="form-control form-control-sm" accept="image/*">
-                    </div>
+                <div class="col-md-4">
+                    <label class="info-label">Team Photo / Logo</label>
+                    <input type="file" name="team_photo" class="form-control" accept="image/*">
                 </div>
 
-                <div class="col-md-3" id="sizeSelectorContainer">
-                    <label class="form-label">Player Count (5v5)</label>
-                    <select id="playerSize" class="form-control" onchange="generateFields()">
+                <div class="col-md-4 offset-md-4 mt-3" id="sizeSelectorContainer" style="display:none;">
+                    <label class="info-label">Roster Limit (5v5)</label>
+                    <select id="playerSize" class="form-select" onchange="generateFields()">
                         <option value="5">5 Players</option>
                         <option value="10">10 Players</option>
                         <option value="15">15 Players</option>
@@ -199,75 +220,92 @@ if (isset($_POST['create'])) {
                 </div>
             </div>
 
+            <hr class="my-5">
+
             <div class="player-grid" id="playerFields"></div>
 
-            <button type="submit" class="btn btn-create w-100" name="create">CREATE TEAM</button>
+            <button type="submit" class="btn btn-create w-100 mt-5" name="create">
+                <i class="bi bi-plus-circle-fill"></i> REGISTER AND SET AS ACTIVE TEAM
+            </button>
         </form>
     </div>
+</div>
 
-    <script>
-        function showPlaceholder() {
-            const container = document.getElementById("playerFields");
-            container.innerHTML = "";
-            for (let i = 1; i <= 5; i++) {
-                container.innerHTML += `
-                    <div class="player-card sample-card">
-                        <b>Sample Player ${i}</b>
-                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
-                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
-                        <div style="height:25px; background:rgba(255,255,255,0.1); margin-bottom:8px; border-radius:4px;"></div>
-                        <p class="text-center mt-3" style="font-size:10px;">Select Game Type to Edit</p>
-                    </div>
-                `;
-            }
+<script>
+    function showPlaceholder() {
+        const container = document.getElementById("playerFields");
+        container.innerHTML = `
+            <div class="placeholder-box">
+                <i class="bi bi-people" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Ready to Build Your Squad?</h5>
+                <p>Select a Game Category above to start adding player details.</p>
+            </div>`;
+    }
+
+    function handleGameTypeChange() {
+        const type = document.getElementById("gameType").value;
+        const sizeContainer = document.getElementById("sizeSelectorContainer");
+        
+        sizeContainer.style.display = (type === "5v5") ? "block" : "none";
+        
+        if (!type) showPlaceholder();
+        else generateFields();
+    }
+
+    function generateFields() {
+        const type = document.getElementById("gameType").value;
+        const container = document.getElementById("playerFields");
+        let count = 0;
+
+        if (type === "1v1") count = 2; 
+        else if (type === "2v2") count = 3; 
+        else if (type === "3v3") count = 4; 
+        else if (type === "4v4") count = 5; 
+        else if (type === "5v5") {
+            count = parseInt(document.getElementById("playerSize").value);
         }
 
-        function handleGameTypeChange() {
-            const type = document.getElementById("gameType").value;
-            const sizeContainer = document.getElementById("sizeSelectorContainer");
+        container.innerHTML = "";
+
+        for (let i = 1; i <= count; i++) {
+            let label = (i === count && type !== "5v5") ? `Sub Player` : `Player ${i}`;
             
-            if (type === "5v5") {
-                sizeContainer.style.display = "block";
-            } else {
-                sizeContainer.style.display = "none";
-            }
-            
-            if (!type) {
-                showPlaceholder();
-            } else {
-                generateFields();
-            }
-        }
-
-        function generateFields() {
-            const type = document.getElementById("gameType").value;
-            const container = document.getElementById("playerFields");
-            let count = 0;
-
-            if (type === "1v1") count = 2; 
-            else if (type === "2v2") count = 3; 
-            else if (type === "3v3") count = 4; 
-            else if (type === "4v4") count = 5; 
-            else if (type === "5v5") {
-                count = parseInt(document.getElementById("playerSize").value);
-            }
-
-            container.innerHTML = "";
-
-            for (let i = 1; i <= count; i++) {
-                let label = (i === count && type !== "5v5") ? `Sub Player` : `Player ${i}`;
-                
-                container.innerHTML += `
-                    <div class="player-card">
-                        <b>${label}</b>
-                        <input type="text" name="player_name[]" class="form-control" placeholder="Name" required>
-                        <input type="number" name="age[]" class="form-control" placeholder="Age" required>
-                        <input type="text" name="height[]" class="form-control" placeholder="Height" required>
-                        <input type="text" name="role[]" class="form-control" placeholder="Role" required>
+            container.innerHTML += `
+                <div class="player-card">
+                    <b><i class="bi bi-person-badge"></i> ${label}</b>
+                    
+                    <div class="mb-3">
+                        <label class="info-label text-muted">Full Name</label>
+                        <input type="text" name="player_name[]" class="form-control form-control-sm" placeholder="Full Name" required>
                     </div>
-                `;
-            }
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <label class="info-label text-muted">Age</label>
+                            <input type="number" name="age[]" class="form-control form-control-sm" placeholder="00" required>
+                        </div>
+                        <div class="col-8">
+                            <label class="info-label text-muted">Height (cm)</label>
+                            <input type="text" name="height[]" class="form-control form-control-sm" placeholder="e.g. 175cm" required>
+                        </div>
+                    </div>
+
+                    <label class="info-label text-muted">Court Role</label>
+                    <select name="role[]" class="form-select form-select-sm" required>
+                        <option value="" selected disabled>Select Role</option>
+                        <option value="Point Guard">Point Guard (PG)</option>
+                        <option value="Shooting Guard">Shooting Guard (SG)</option>
+                        <option value="Small Forward">Small Forward (SF)</option>
+                        <option value="Power Forward">Power Forward (PF)</option>
+                        <option value="Center">Center (C)</option>
+                        <option value="Sixth Man">Sixth Man (Sub)</option>
+                        <option value="Captain">Team Captain</option>
+                    </select>
+                </div>
+            `;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
