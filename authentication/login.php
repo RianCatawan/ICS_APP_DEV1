@@ -1,16 +1,16 @@
 <?php
 session_start();
-include "db.php";
+include(__DIR__ . '/../database&config/db.php');
 
 if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // 1. Check for the hardcoded Admin credentials first
+    // 1. Check for hardcoded Admin credentials first
     if($username === 'admin' && $password === 'password'){
         $_SESSION['username'] = 'admin';
         $_SESSION['role'] = 'admin';
-        header("Location: admin.php"); // Create this page for admin tasks
+        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -22,25 +22,25 @@ if(isset($_POST['login'])){
 
     if($result->num_rows > 0){
         $row = $result->fetch_assoc();
-        
-        // Using password_verify for security on registered accounts
+
         if(password_verify($password, $row['password'])){
             $_SESSION['username'] = $row['username'];
             $_SESSION['role'] = $row['role'] ?? 'player';
-            
-            header("Location: profile.php?sid=" . urlencode($row['username']));
+
+            // Record the Login Activity (only on successful login)
+            $log_action = "Logged In";
+            $log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
+            $log_stmt->bind_param("ss", $row['username'], $log_action);
+            $log_stmt->execute();
+
+            header("Location: /ICS_APP_DEV1/userManagement/profile.php?sid=" . urlencode($row['username']));
             exit();
-        } else { 
-            $error = "Invalid Password"; 
+        } else {
+            $error = "Invalid Password";
         }
-    } else { 
-        $error = "User Not Found"; 
+    } else {
+        $error = "User Not Found";
     }
-    // Record the Login Activity
-$log_action = "Logged In";
-$log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
-$log_stmt->bind_param("ss", $row['username'], $log_action);
-$log_stmt->execute();
 }
 ?>
 <!DOCTYPE html>
@@ -103,13 +103,15 @@ $log_stmt->execute();
 <div class="top-bar"></div>
 
 <nav class="navbar px-4">
-    <a class="navbar-brand" href="index.php"> HoopMatch</a>
+    <a class="navbar-brand" href="/ICS_APP_DEV1/dashboard_and_admin/index.php">🏀 HoopMatch</a>
 </nav>
 
 <div class="login-container">
     <h2>Login</h2>
 
-    <?php if(isset($error)) { echo "<div class='error-msg'>$error</div>"; } ?>
+    <?php if(isset($error)): ?>
+        <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
 
     <form method="POST">
         <input type="text" name="username" class="form-control" placeholder="Student ID or Username" required>
@@ -119,7 +121,7 @@ $log_stmt->execute();
 
     <p class="mt-4">
         Don't have an account? <br>
-        <a href="register.php">Create Player Account</a>
+        <a href="/ICS_APP_DEV1/authentication/register.php">Create Player Account</a>
     </p>
 </div>
 

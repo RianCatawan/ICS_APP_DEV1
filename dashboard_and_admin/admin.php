@@ -100,7 +100,7 @@ $pending_reqs = $conn->query("SELECT COUNT(*) as total FROM match_requests WHERE
     <nav class="nav flex-column mt-4">
         <a class="nav-link active" href="#"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
         <a class="nav-link" href="view_teams.php"><i class="bi bi-people me-2"></i> Teams</a>
-        <a class="nav-link" href="view_matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
+        <a class="nav-link" href="matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
         <a class="nav-link" href="manage_users.php"><i class="bi bi-person-gear me-2"></i> User Settings</a>
         <hr class="mx-3 opacity-25">
         <a class="nav-link text-danger" href="index.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
