@@ -24,7 +24,7 @@ $today = date('Y-m-d');
 $match_date = date('Y-m-d', strtotime($match['reservation_date']));
 
 if ($match['final_status'] === 'confirmed') {
-    die("<script>alert('This match is already finished.'); window.location.href='/match_system/upcoming_reservation';</script>");
+    die("<script>alert('This match is already finished.'); window.location.href='/ICS_APP_DEV1/match_system/upcoming_reservation';</script>");
 }
 if ($today > $match_date) {
     die("<script>alert('Match time has expired.'); window.location.href='upcoming_reservation.php';</script>");
@@ -65,7 +65,7 @@ if ($today > $match_date) {
             </div>
         </div>
 
-        <form action="save_result.php" method="POST" class="mt-5" onsubmit="return confirm('Finalize this score? This cannot be undone.');">
+        <form action="/ICS_APP_DEV1/match_system/save_result.php" method="POST" class="mt-5" onsubmit="return confirm('Finalize this score? This cannot be undone.');">
             <input type="hidden" name="match_id" value="<?= $match_id ?>">
             <input type="hidden" name="h_score" id="h_val" value="0">
             <input type="hidden" name="a_score" id="a_val" value="0">

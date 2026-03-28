@@ -138,12 +138,12 @@ $result = $conn->query($sql);
         <h5 class="fw-bold mb-0 mt-2">NBSC ADMIN</h5>
     </div>
     <nav class="mt-2">
-        <a class="nav-link" href="/dashboard_and_admin/admin.php"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
-        <a class="nav-link" href="/userManagement/view_teams.php"><i class="bi bi-people me-2"></i> Teams</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/dashboard_and_admin/admin.php"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/userManagement/view_teams.php"><i class="bi bi-people me-2"></i> Teams</a>
         <a class="nav-link active" href="#"><i class="bi bi-trophy me-2"></i> Matches</a>
-        <a class="nav-link" href="/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> Settings</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> Settings</a>
         <hr class="mx-3 opacity-25">
-        <a class="nav-link text-danger" href="/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
+        <a class="nav-link text-danger" href="/ICS_APP_DEV1/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Logout</a>
     </nav>
 </aside>
 
@@ -153,7 +153,7 @@ $result = $conn->query($sql);
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
-                        <li class="breadcrumb-item"><a href="/dashboard_and_admin/admin.php" class="text-muted">Admin</a></li>
+                        <li class="breadcrumb-item"><a href="/ICS_APP_DEV1/dashboard_and_admin/admin.php" class="text-muted">Admin</a></li>
                         <li class="breadcrumb-item active text-primary">Match History</li>
                     </ol>
                 </nav>

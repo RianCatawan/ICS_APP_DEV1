@@ -4,7 +4,7 @@ include(__DIR__ . '/../database&config/db.php');
 
 // Security Check: Only 'admin' role can access
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: /authentication/login.php");
+    header("Location: /ICS_APP_DEV1/authentication/login.php");
     exit();
 }
 
@@ -143,12 +143,12 @@ $result = $conn->query($query);
         <h4 class="fw-bold mb-0 mt-2">NBSC ADMIN</h4>
     </div>
     <nav class="mt-4">
-        <a class="nav-link" href="/dashboard_and_admin/admin.php"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/dashboard_and_admin/admin.php"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
         <a class="nav-link active" href="#"><i class="bi bi-people me-2"></i> Teams</a>
-        <a class="nav-link" href="/match_system/matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
-        <a class="nav-link" href="/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> User Settings</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/match_system/matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
+        <a class="nav-link" href="/ICS_APP_DEV1/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> User Settings</a>
         <hr class="mx-3 opacity-25">
-        <a class="nav-link text-danger" href="/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
+        <a class="nav-link text-danger" href="/ICS_APP_DEV1/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
     </nav>
 </div>
 
@@ -159,7 +159,7 @@ $result = $conn->query($query);
             <div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1 small">
-                        <li class="breadcrumb-item"><a href="/dashboard_and_admin/admin.php" class="text-muted">Admin</a></li>
+                        <li class="breadcrumb-item"><a href="/ICS_APP_DEV1/dashboard_and_admin/admin.php" class="text-muted">Admin</a></li>
                         <li class="breadcrumb-item active text-primary">Manage Teams</li>
                     </ol>
                 </nav>

@@ -1,82 +1,142 @@
--- Create Database
+-- =========================
+-- CREATE DATABASE
+-- =========================
 CREATE DATABASE IF NOT EXISTS university_hoops;
 USE university_hoops;
 
--- 1. Users Table (Base table for authentication)
+-- =========================
+-- USERS TABLE
+-- =========================
 CREATE TABLE users (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB;
+    role VARCHAR(20) DEFAULT 'player',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- 2. Teams Table
+-- =========================
+-- TEAMS TABLE
+-- =========================
 CREATE TABLE teams (
-    id INT(11) NOT NULL AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     team_name VARCHAR(100) NOT NULL,
-    game_type VARCHAR(20) DEFAULT NULL,
-    created_by VARCHAR(50) NOT NULL, -- Links to users.username
-    team_photo VARCHAR(255) DEFAULT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB;
+    game_type VARCHAR(50),
+    created_by VARCHAR(50),
+    team_photo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- 3. Players Table
+-- =========================
+-- PLAYERS TABLE
+-- =========================
 CREATE TABLE players (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    student_id VARCHAR(50) NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    course VARCHAR(100) DEFAULT NULL,
-    contact VARCHAR(20) DEFAULT NULL,
-    position VARCHAR(50) DEFAULT NULL,
-    skill_level VARCHAR(50) DEFAULT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) UNIQUE,
+    full_name VARCHAR(100),
+    course VARCHAR(100),
+    contact VARCHAR(20),
+    position VARCHAR(50),
+    skill_level VARCHAR(50),
+    active_team_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    active_team_id INT(11) DEFAULT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_active_team FOREIGN KEY (active_team_id) REFERENCES teams(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
 
--- 4. Team Players Table (Junction table for rosters)
+    FOREIGN KEY (active_team_id) REFERENCES teams(id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- =========================
+-- TEAM PLAYERS
+-- =========================
 CREATE TABLE team_players (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    team_id INT(11) NOT NULL,
-    player_name VARCHAR(100) NOT NULL,
-    age INT(11) DEFAULT NULL,
-    height VARCHAR(20) DEFAULT NULL,
-    role VARCHAR(50) DEFAULT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_team_id FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    team_id INT,
+    player_name VARCHAR(100),
+    age INT,
+    height VARCHAR(20),
+    role VARCHAR(50),
 
--- 5. Reservations Table
+    FOREIGN KEY (team_id) REFERENCES teams(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- RESERVATIONS
+-- =========================
 CREATE TABLE reservations (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    team_id INT(11) NOT NULL,
-    username VARCHAR(50) NOT NULL,
-    reservation_date DATE NOT NULL,
-    selected_time VARCHAR(50) NOT NULL,
-    status ENUM('open', 'matched', 'completed') DEFAULT 'open',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    team_id INT,
+    username VARCHAR(50),
+    reservation_date DATE,
+    selected_time VARCHAR(50),
+    status ENUM('open','matched','completed') DEFAULT 'open',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_res_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
 
--- 6. Match Requests Table
+    FOREIGN KEY (team_id) REFERENCES teams(id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- MATCH REQUESTS
+-- =========================
 CREATE TABLE match_requests (
-    id INT(11) NOT NULL AUTO_INCREMENT,
-    reservation_id INT(11) NOT NULL,
-    challenger_team_id INT(11) NOT NULL,
-    status ENUM('pending', 'accepted', 'declined') DEFAULT 'pending',
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reservation_id INT,
+    challenger_team_id INT,
+    status VARCHAR(20) DEFAULT 'pending',
+    home_score INT DEFAULT 0,
+    away_score INT DEFAULT 0,
+    winner_id INT NULL,
+    final_status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     home_approved TINYINT(1) DEFAULT 0,
     challenger_approved TINYINT(1) DEFAULT 0,
-    final_status ENUM('pending', 'confirmed') DEFAULT 'pending',
-    home_score INT(11) DEFAULT 0,
-    away_score INT(11) DEFAULT 0,
-    winner_id INT(11) DEFAULT NULL,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_match_res FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
-    CONSTRAINT fk_challenger_team FOREIGN KEY (challenger_team_id) REFERENCES teams(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+
+    FOREIGN KEY (reservation_id) REFERENCES reservations(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+
+    FOREIGN KEY (challenger_team_id) REFERENCES teams(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+
+    FOREIGN KEY (winner_id) REFERENCES teams(id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- =========================
+-- MATCH HISTORY
+-- =========================
+CREATE TABLE match_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    match_id INT,
+    home_score INT,
+    away_score INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    winner_id INT NULL,
+
+    FOREIGN KEY (match_id) REFERENCES match_requests(id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+
+    FOREIGN KEY (winner_id) REFERENCES teams(id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- =========================
+-- USER LOGS
+-- =========================
+CREATE TABLE user_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    action VARCHAR(100),
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (username) REFERENCES users(username)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =========================
+-- INDEXES (PERFORMANCE)
+-- =========================
+CREATE INDEX idx_team_id ON reservations(team_id);
+CREATE INDEX idx_reservation_id ON match_requests(reservation_id);
+CREATE INDEX idx_challenger_team ON match_requests(challenger_team_id);
+CREATE INDEX idx_match_id ON match_history(match_id);

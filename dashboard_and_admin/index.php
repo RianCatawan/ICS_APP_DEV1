@@ -781,7 +781,7 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="<?php echo $base; ?>/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
+            <a href="<?php echo $base; ?>/ICS_APP_DEV1/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
             <a href="<?php echo $base; ?>/ICS_APP_DEV1/authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>

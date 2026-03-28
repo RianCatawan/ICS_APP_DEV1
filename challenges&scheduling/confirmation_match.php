@@ -174,7 +174,7 @@ if (isset($_POST['click_approve'])) {
 <body>
 
 <div class="confirmation-box">
-    <a href="/userManagement/profile.php?sid=<?= $current_user_sid ?>" class="back-btn">
+    <a href="/ICS_APP_DEV1/userManagement/profile.php?sid=<?= $current_user_sid ?>" class="back-btn">
         <i class="bi bi-arrow-left"></i> BACK TO PROFILE
     </a>
 
