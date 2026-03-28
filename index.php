@@ -2,7 +2,7 @@
 session_start();
 
 // This automatically finds the correct path regardless of the folder name
-$db_path = __DIR__ . '/database_config/db.php';
+$db_path = __DIR__ . '/database&config/db.php';
 
 if (file_exists($db_path)) {
     include($db_path);
