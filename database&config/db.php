@@ -1,10 +1,10 @@
 <?php
 // db.php - Database connection for HoopMatch
 
-$servername = "basketball_matchmaker";
+$servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "university_hoops";
+$dbname = "basketball_matchmaker";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
