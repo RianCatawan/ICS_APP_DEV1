@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+include(__DIR__ . '/database_config/db.php');
 
 if(isset($_POST['login'])){
     $username = $_POST['username'];
