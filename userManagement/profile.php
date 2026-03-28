@@ -124,8 +124,8 @@ while($m = $status_results->fetch_assoc()) {
                 <p class="mb-0 opacity-75 small"><?= htmlspecialchars($sid); ?> | <?= $player['course'] ?? 'No Course Listed'; ?></p>
             </div>
             <div>
-                <a href="/dashboard_and_admin/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
-                <a href="/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
+                <a href="/ICS_APP_DEV1/dashboard_and_admin/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
+                <a href="/ICS_APP_DEV1/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
             </div>
         </div>
     </div>
@@ -158,7 +158,7 @@ while($m = $status_results->fetch_assoc()) {
         </div>
 
         <div class="col-lg-8">
-            <a href="/match_system/upcoming_reservation.php" class="upcoming-highlight-card">
+            <a href="/ICS_APP_DEV1/match_system/upcoming_reservation.php" class="upcoming-highlight-card">
                 <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-calendar-check-fill fs-2" style="color: var(--brand-accent);"></i>
                     <div>
@@ -171,7 +171,7 @@ while($m = $status_results->fetch_assoc()) {
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-800 m-0">YOUR MANAGED TEAMS</h4>
-                <a href="/Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
+                <a href="/ICS_APP_DEV1/Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
             </div>
 
             <div class="row g-3">
@@ -186,15 +186,15 @@ while($m = $status_results->fetch_assoc()) {
                                 <p class="small text-muted mb-3"><?= $team['game_type']; ?> Squad</p>
                                 
                                 <div class="btn-action-group">
-                                    <a href="/challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
+                                    <a href="/ICS_APP_DEV1/challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
                                         <i class="bi bi-calendar-plus me-1"></i> BOOK
                                     </a>
                                     
-                                    <a href="/challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
+                                    <a href="/ICS_APP_DEV1/challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
                                         <i class="bi bi-search me-1"></i> FIND MATCH
                                     </a>
 
-                                    <a href="/Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
+                                    <a href="/ICS_APP_DEV1/Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 </div>
