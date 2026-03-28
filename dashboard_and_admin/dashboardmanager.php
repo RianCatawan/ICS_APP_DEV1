@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php";
+include(__DIR__ . '/../database&config/db.php');
 
 // 1. Security Check (Adjust 'role' or 'username' based on your session logic)
 if (!isset($_SESSION['username'])) {
@@ -124,7 +124,7 @@ $user_logs = $conn->query($log_query);
             <div class="admin-card text-center">
                 <h6 class="text-uppercase fw-bold text-muted">Total Teams</h6>
                 <div class="stat-number"><?php echo $team_count; ?></div>
-                <a href="view_teams.php" class="btn btn-main mt-3 w-100">Manage Teams</a>
+                <a href="/userManagement/view_teams.php" class="btn btn-main mt-3 w-100">Manage Teams</a>
             </div>
         </div>
 
@@ -132,7 +132,7 @@ $user_logs = $conn->query($log_query);
             <div class="admin-card text-center">
                 <h6 class="text-uppercase fw-bold text-muted">Pending Matches</h6>
                 <div class="stat-number"><?php echo $match_count; ?></div>
-                <a href="view_matches.php" class="btn btn-main mt-3 w-100">Review Requests</a>
+                <a href="" class="btn btn-main mt-3 w-100">Review Requests</a>
             </div>
         </div>
 
@@ -145,7 +145,7 @@ $user_logs = $conn->query($log_query);
                         <div class="fw-bold">User Access</div>
                         <small class="text-muted">Manage accounts</small>
                     </div>
-                    <a href="manage_users.php" class="btn btn-sm btn-main"><i class="bi bi-people"></i></a>
+                    <a href="/userManagement/manage_users.php" class="btn btn-sm btn-main"><i class="bi bi-people"></i></a>
                 </div>
 
                 <div class="task-item">

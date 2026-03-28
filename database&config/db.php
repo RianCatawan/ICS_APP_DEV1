@@ -1,10 +1,10 @@
 <?php
 // db.php - Database connection for HoopMatch
 
-$servername = "localhost";  // Usually localhost on XAMPP
-$username = "root";         // Default XAMPP username
-$password = "";             // Default XAMPP password is empty
-$dbname = "university_hoops";  // Make sure you created this database
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "university_hoops";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
