@@ -6,15 +6,15 @@ if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // 1. Check for hardcoded Admin credentials first
+    // ── HARDCODED ADMIN CHECK ──
     if($username === 'admin' && $password === 'password'){
         $_SESSION['username'] = 'admin';
-        $_SESSION['role'] = 'admin';
-        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
+        $_SESSION['role'] = 'admin'; // Set role as admin
+        header("Location: /dashboard_and_admin/admin.php");
         exit();
     }
 
-    // 2. Otherwise, check the database for regular players
+    // ── REGULAR USER CHECK ──
     $stmt = $conn->prepare("SELECT * FROM users WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
@@ -22,24 +22,21 @@ if(isset($_POST['login'])){
 
     if($result->num_rows > 0){
         $row = $result->fetch_assoc();
-
         if(password_verify($password, $row['password'])){
             $_SESSION['username'] = $row['username'];
-            $_SESSION['role'] = $row['role'] ?? 'player';
+            $_SESSION['role'] = $row['role'] ?? 'player'; // Default role is player
 
-            // Record the Login Activity (only on successful login)
-            $log_action = "Logged In";
-            $log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
-            $log_stmt->bind_param("ss", $row['username'], $log_action);
+            $log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, 'Logged In')");
+            $log_stmt->bind_param("s", $row['username']);
             $log_stmt->execute();
 
-            header("Location: /ICS_APP_DEV1/userManagement/profile.php?sid=" . urlencode($row['username']));
+            header("Location: /userManagement/profile.php?sid=" . urlencode($row['username']));
             exit();
         } else {
-            $error = "Invalid Password";
+            $error = "Invalid password. Please try again.";
         }
     } else {
-        $error = "User Not Found";
+        $error = "No account found with that username.";
     }
 }
 ?>
@@ -47,83 +44,248 @@ if(isset($_POST['login'])){
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HoopMatch | Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | NBSC Basketball</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0a2e6e, #123e8c, #0d47a1);
-            color: white;
-            height: 100vh;
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=DM+Sans:wght@400;500;700&display=swap');
+
+        :root {
+            --navy: #0D2F6E;
+            --navy-deep: #071A42;
+            --amber: #F5A623;
+            --white: #FFFFFF;
+            --border: #C8DCEF;
+            --radius-lg: 18px;
+            --radius-pill: 9999px;
+        }
+
+        /* ── ONE PAGE FIX ── */
+        html, body { 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+            background: linear-gradient(160deg, #daeeff 0%, #eef5fb 100%);
+            font-family: 'DM Sans', sans-serif;
             display: flex;
             flex-direction: column;
         }
-        .top-bar { width: 100%; height: 10px; background: #FFD700; }
-        .navbar-brand { color: white !important; font-weight: bold; font-size: 24px; text-decoration: none; }
-        .login-container {
-            margin: auto;
-            background: rgba(0,0,0,0.55);
-            padding: 50px;
-            border-radius: 10px;
-            max-width: 420px;
-            width: 100%;
-            text-align: center;
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255,255,255,0.2);
+
+        /* ── NAVBAR ── */
+        .navbar {
+            background: var(--navy-deep) !important;
+            border-radius: var(--radius-lg);
+            padding: 12px 25px;
+            margin: 15px;
+            border-bottom: 3px solid var(--amber);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .login-container h2 { margin-bottom: 25px; font-weight: bold; text-transform: uppercase; }
-        .form-control {
-            background: #0a1f4f;
-            color: white;
-            border: 1px solid #FFD700;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 20px;
+
+        .navbar-brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: var(--white) !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .form-control:focus { background: #0a1f4f; color: white; border-color: white; box-shadow: none; }
-        .btn-login {
-            background: #FFD700;
-            color: black;
-            font-weight: bold;
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
+
+        .btn-outline-custom {
+            color: var(--amber);
+            border: 2px solid var(--amber);
+            padding: 6px 15px;
+            border-radius: var(--radius-pill);
+            text-decoration: none;
+            font-family: 'Outfit';
+            font-weight: 700;
+            font-size: 0.8rem;
             transition: 0.3s;
         }
-        .btn-login:hover { background: #ffcc00; transform: translateY(-2px); }
-        a { color: #FFD700; text-decoration: none; font-weight: bold; }
-        .error-msg { color: #ff6b6b; margin-bottom: 15px; font-weight: bold; }
+
+        .btn-outline-custom:hover {
+            background: var(--amber);
+            color: var(--navy-deep);
+        }
+
+        /* ── LOGIN CARD ── */
+        .login-wrapper {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--white);
+            border: 3px solid var(--navy-deep);
+            border-radius: var(--radius-lg);
+            padding: 35px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: var(--amber);
+        }
+
+        .login-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--navy-deep);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            border: 3px solid var(--amber);
+            color: var(--amber);
+            font-size: 1.5rem;
+        }
+
+        .login-card h2 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            text-align: center;
+            color: var(--navy);
+            text-transform: uppercase;
+        }
+
+        /* ── INPUTS & BUTTONS ── */
+        .field-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--navy);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-group-custom i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--navy);
+        }
+
+        .input-group-custom input {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .input-group-custom input:focus {
+            border-color: var(--navy);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--navy-deep);
+            color: var(--amber);
+            font-family: 'Outfit';
+            font-weight: 700;
+            border: none;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background: var(--amber);
+            color: var(--navy-deep);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .error-msg {
+            background: #FEE2E2;
+            color: #B91C1C;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-left: 4px solid #B91C1C;
+        }
     </style>
 </head>
 <body>
 
-<div class="top-bar"></div>
-
-<nav class="navbar px-4">
-    <a class="navbar-brand" href="/ICS_APP_DEV1/dashboard_and_admin/index.php">🏀 HoopMatch</a>
+<nav class="navbar">
+    <a class="navbar-brand" href="/index.php">
+        <i class="bi bi-dribbble"></i> NBSC MATCH MAKER
+    </a>
+    <div class="d-flex gap-2 align-items-center">
+        <a href="/dashboard_and_admin/index.php" class="btn-outline-custom">BACK TO HOME</a>
+        <a href="/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
+    </div>
 </nav>
 
-<div class="login-container">
-    <h2>Login</h2>
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-icon"><i class="bi bi-shield-lock-fill"></i></div>
+        <h2>Welcome Back</h2>
+        <p class="text-center text-muted small mb-4">Sign in to your account</p>
 
-    <?php if(isset($error)): ?>
-        <div class="error-msg"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
+        <?php if(isset($error)): ?>
+            <div class="error-msg"><i class="bi bi-exclamation-circle"></i> <?= $error; ?></div>
+        <?php endif; ?>
 
-    <form method="POST">
-        <input type="text" name="username" class="form-control" placeholder="Student ID or Username" required>
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-        <button type="submit" name="login" class="btn-login">Login</button>
-    </form>
+        <form method="POST">
+            <label class="field-label">Username / Student ID</label>
+            <div class="input-group-custom">
+                <i class="bi bi-person"></i>
+                <input type="text" name="username" placeholder="Enter ID or 'admin'" required>
+            </div>
 
-    <p class="mt-4">
-        Don't have an account? <br>
-        <a href="/ICS_APP_DEV1/authentication/register.php">Create Player Account</a>
-    </p>
+            <label class="field-label">Password</label>
+            <div class="input-group-custom">
+                <i class="bi bi-lock"></i>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" name="login" class="btn-login">SIGN IN</button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <a href="/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
+            CREATE PLAYER ACCOUNT
+        </a>
+    </div>
 </div>
 
+<footer class="text-center p-3 text-muted small flex-shrink-0">
+    NBSC Match Maker &mdash; Basketball Court System &copy; 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

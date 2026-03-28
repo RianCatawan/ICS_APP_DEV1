@@ -1,25 +1,23 @@
 <?php
 session_start();
-include "db.php";
+include(__DIR__ . '/../database&config/db.php');
 
+// Check if user is logged in
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
     $action = "User Logged Out";
-    
-    // 1. Store in User Logs
-    // Note: Ensure you have a table named 'user_logs' with columns: username, action, timestamp
-    $log_stmt = $conn->prepare("INSERT INTO user_logs (username, action, log_time) VALUES (?, ?, NOW())");
-    $log_stmt->bind_param("ss", $username, $action);
-    $log_stmt->execute();
+
+    // Insert log (NO ERROR NOW)
+    $stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, ?)");
+    $stmt->bind_param("ss", $username, $action);
+    $stmt->execute();
 }
 
-// 2. Clear all session data
-$_SESSION = array();
-
-// 3. Destroy the session
+// Clear session
+$_SESSION = [];
 session_destroy();
 
-// 4. Redirect to login or home page
-header("Location: index.php"); 
+// Redirect to login page
+header("Location: /dashboard_and_admin/index.php");
 exit();
 ?>

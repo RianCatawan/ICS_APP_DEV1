@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php";
+include(__DIR__ . '/../database&config/db.php');
 
 $request_id = $_GET['id'] ?? '';
 $action = $_GET['action'] ?? '';
