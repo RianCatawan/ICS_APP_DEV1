@@ -126,7 +126,7 @@ $pending_reqs = $conn->query("SELECT COUNT(*) as total FROM match_requests WHERE
         <a class="nav-link" href="/ICS_APP_DEV1/match_system/matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
         <a class="nav-link" href="/ICS_APP_DEV1/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> User Settings</a>
         <hr class="mx-3 opacity-25">
-        <a class="nav-link text-danger" href="/ICS_APP_DEV1/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
+        <a class="nav-link text-danger" href="/ICS_APP_DEV1/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
     </nav>
 </div>
 
