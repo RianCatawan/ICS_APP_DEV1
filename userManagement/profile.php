@@ -125,7 +125,7 @@ while($m = $status_results->fetch_assoc()) {
             </div>
             <div>
                 <a href="/ICS_APP_DEV1/dashboard_and_admin/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
-                <a href="/ICS_APP_DEV1/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
+                <a href="/ICS_APP_DEV1/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
             </div>
         </div>
     </div>
