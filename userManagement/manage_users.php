@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 // Security Check
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {

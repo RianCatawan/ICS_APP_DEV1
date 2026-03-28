@@ -1,6 +1,6 @@
 <?php
 session_start();
-$server_path = __DIR__ . "/../uploads/" . $file;
+include(__DIR__ . '/database_config/db.php');
 
 $current_user = $_SESSION['username'] ?? '';
 $base = "";
@@ -90,9 +90,12 @@ $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
 // ===== IMAGE HELPER =====
 function getImage($file) {
     if (empty($file)) return "https://via.placeholder.com/50";
-    $server_path = __DIR__ . "/../uploads/" . $file;
+    
+    // Changed "/../uploads/" to "/uploads/"
+    $server_path = __DIR__ . "/uploads/" . $file; 
+    
     if (file_exists($server_path)) {
-        return "../uploads/" . $file;
+        return "uploads/" . $file; // Also removed ../ here
     }
     return "https://via.placeholder.com/50";
 }

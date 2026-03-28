@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 if (!isset($_SESSION['user_id'])) {
     die("Access denied. Please login first.");

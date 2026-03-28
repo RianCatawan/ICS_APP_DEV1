@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 $req_id = $_GET['id'] ?? '';
 $current_user_sid = $_SESSION['username'] ?? '';
