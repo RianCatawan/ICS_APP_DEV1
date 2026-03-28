@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 1. Get the data from the form

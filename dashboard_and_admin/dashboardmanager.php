@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 // 1. Security Check (Adjust 'role' or 'username' based on your session logic)
 if (!isset($_SESSION['username'])) {

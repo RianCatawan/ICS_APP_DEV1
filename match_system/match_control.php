@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 $match_id = $_POST['match_id'] ?? $_GET['match_id'] ?? null;
 if (!$match_id) die("No match selected.");

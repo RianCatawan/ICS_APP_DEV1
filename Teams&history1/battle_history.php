@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database&config/db.php');
+include(__DIR__ . '/../database_config/db.php');
 
 // THE QUERY: Join 'reservations' and 'teams' twice to get both Names.
 $query = "SELECT 
