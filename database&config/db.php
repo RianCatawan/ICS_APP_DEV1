@@ -1,7 +1,7 @@
 <?php
 // db.php - Database connection for HoopMatch
 
-$servername = "localhost";
+$servername = "basketball_matchmaker";
 $username = "root";
 $password = "";
 $dbname = "university_hoops";
