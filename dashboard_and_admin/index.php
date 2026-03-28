@@ -1,6 +1,7 @@
 <?php
 session_start();
-$server_path = __DIR__ . "/uploads/" . $file;$current_user = $_SESSION['username'] ?? '';
+include(__DIR__ . '/database&config/db.php');
+$current_user = $_SESSION['username'] ?? '';
 $base = "";
 
 $user_info = ['team_name' => 'None', 'active_team_id' => 0];
