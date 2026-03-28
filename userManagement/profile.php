@@ -140,7 +140,7 @@ while($m = $status_results->fetch_assoc()) {
                     <div class="match-item <?= $needs_my_approval ? 'needs-approval' : ''; ?>">
                         <div><?= $pm['home_n']; ?> <span class="opacity-50">vs</span> <?= $pm['away_n']; ?></div>
                         <?php if($needs_my_approval): ?>
-                            <a href="/challenges&scheduling/confirmation_match.php?id=<?= $pm['id']; ?>" class="btn btn-warning btn-sm fw-bold py-0" style="font-size: 0.65rem;">APPROVE</a>
+                            <a href="/ICS_APP_DEV1/challenges&scheduling/confirmation_match.php?id=<?= $pm['id']; ?>" class="btn btn-warning btn-sm fw-bold py-0" style="font-size: 0.65rem;">APPROVE</a>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; if(empty($pending_matches)) echo "<p class='small text-muted'>No pending actions.</p>"; ?>

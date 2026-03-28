@@ -18,6 +18,6 @@ $_SESSION = [];
 session_destroy();
 
 // Redirect to login page
-header("Location: /dashboard_and_admin/index.php");
+header("Location: /ICS_APP_DEV1/dashboard_and_admin/index.php");
 exit();
 ?>
