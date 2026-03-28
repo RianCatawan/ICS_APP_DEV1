@@ -1,6 +1,6 @@
 <?php
 session_start();
-$server_path = __DIR__ . "/../uploads/" . $file;
+include(__DIR__ . '/../database&config/db.php');
 
 $current_user = $_SESSION['username'] ?? '';
 $base = "";
