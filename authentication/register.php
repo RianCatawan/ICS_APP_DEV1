@@ -1,4 +1,5 @@
 <?php
+session_start();
 include(__DIR__ . '/../database&config/db.php');
 
 if (isset($_POST['submit_reg'])) {
@@ -11,6 +12,7 @@ if (isset($_POST['submit_reg'])) {
     $position  = $_POST['position'];
     $skill     = $_POST['skill'];
 
+    // ✅ CHECK IF USER EXISTS
     $check = $conn->prepare("SELECT id FROM users WHERE username = ?");
     $check->bind_param("s", $username);
     $check->execute();
@@ -20,20 +22,33 @@ if (isset($_POST['submit_reg'])) {
         $error = "Username already exists! Please choose another.";
     } else {
 
+        // ✅ INSERT INTO USERS
         $stmt1 = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
         $stmt1->bind_param("ss", $username, $password);
 
         if ($stmt1->execute()) {
 
-            $stmt2 = $conn->prepare("INSERT INTO players (student_id, full_name, course, contact, position, skill_level) VALUES (?, ?, ?, ?, ?, ?)");
+            // ✅ INSERT INTO PLAYERS
+            $stmt2 = $conn->prepare("
+                INSERT INTO players (student_id, full_name, course, contact, position, skill_level) 
+                VALUES (?, ?, ?, ?, ?, ?)
+            ");
             $stmt2->bind_param("ssssss", $username, $full_name, $course, $contact, $position, $skill);
 
             if ($stmt2->execute()) {
-                header("Location: ../userManagement/profile.php?sid=" . urlencode($username));
+
+                // 🔥 IMPORTANT: AUTO LOGIN
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = 'player';
+
+                // ✅ REDIRECT TO PROFILE (NO NEED ?sid anymore)
+                header("Location: ../userManagement/profile.php");
                 exit();
+
             } else {
                 $error = "Error saving player info. Please try again.";
             }
+
         } else {
             $error = "Error creating account. Please try again.";
         }
@@ -580,8 +595,8 @@ body {
             </div>
 
             <!-- SUBMIT -->
-            <button type="submit" name="submit_reg" class="btn-submit">
-                <i class="bi bi-person-check-fill"></i> Create Player Account
+            <button  type="submit" name="submit_reg" class="btn-submit">
+                <i  class="bi bi-person-check-fill"></i> Create Player Account
             </button>
 
             <div class="login-redirect">
