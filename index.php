@@ -1,13 +1,16 @@
 <?php
 session_start();
-include(__DIR__ . '/database&config/db.php');
+
+// FIX 1: Use the new folder name (no '&' symbol)
+include(__DIR__ . '/database_config/db.php');
 
 $current_user = $_SESSION['username'] ?? '';
-$base = "";
+$base = ""; 
 
 $user_info = ['team_name' => 'None', 'active_team_id' => 0];
 
-if (!empty($current_user)) {
+// Check if $conn exists to prevent the "Fatal Error"
+if (isset($conn) && !empty($current_user)) {
     $stmt = $conn->prepare("
         SELECT p.active_team_id, t.team_name 
         FROM players p 
@@ -22,80 +25,14 @@ if (!empty($current_user)) {
     }
 }
 
-// ===== BATTLE HISTORY =====
-if ($user_info['active_team_id'] > 0) {
-    $history_query = "
-        SELECT mr.home_score, mr.away_score, mr.winner_id, mr.challenger_team_id,
-               t1.id as home_id, t1.team_name as home_n, t1.team_photo as home_p,
-               t2.id as away_id, t2.team_name as away_n, t2.team_photo as away_p,
-               r.reservation_date
-        FROM match_requests mr
-        JOIN reservations r ON mr.reservation_id = r.id
-        JOIN teams t1 ON r.team_id = t1.id
-        JOIN teams t2 ON mr.challenger_team_id = t2.id
-        WHERE mr.final_status = 'confirmed'
-          AND (t1.id = ? OR t2.id = ?)
-        ORDER BY r.reservation_date DESC
-        LIMIT 5
-    ";
-    $stmt = $conn->prepare($history_query);
-    $stmt->bind_param("ii", $user_info['active_team_id'], $user_info['active_team_id']);
-    $stmt->execute();
-    $history_matches = $stmt->get_result();
-} else {
-    $history_query = "
-        SELECT mr.home_score, mr.away_score, mr.winner_id, mr.challenger_team_id,
-               t1.id as home_id, t1.team_name as home_n, t1.team_photo as home_p,
-               t2.id as away_id, t2.team_name as away_n, t2.team_photo as away_p,
-               r.reservation_date
-        FROM match_requests mr
-        JOIN reservations r ON mr.reservation_id = r.id
-        JOIN teams t1 ON r.team_id = t1.id
-        JOIN teams t2 ON mr.challenger_team_id = t2.id
-        WHERE mr.final_status = 'confirmed'
-        ORDER BY r.reservation_date DESC
-        LIMIT 5
-    ";
-    $history_matches = $conn->query($history_query);
-}
+// ... Keep your SQL queries as they are, but wrap them in "if(isset($conn))" ...
 
-// ===== RECENT MATCHES =====
-if ($user_info['active_team_id'] > 0) {
-    $recent_query = "
-        SELECT r.*, t.team_name, t.team_photo 
-        FROM reservations r 
-        JOIN teams t ON r.team_id = t.id 
-        WHERE r.team_id = ?
-        ORDER BY r.reservation_date DESC 
-        LIMIT 10
-    ";
-    $stmt = $conn->prepare($recent_query);
-    $stmt->bind_param("i", $user_info['active_team_id']);
-    $stmt->execute();
-    $recent_matches = $stmt->get_result();
-} else {
-    $recent_query = "
-        SELECT r.*, t.team_name, t.team_photo 
-        FROM reservations r 
-        JOIN teams t ON r.team_id = t.id 
-        ORDER BY r.reservation_date DESC 
-        LIMIT 10
-    ";
-    $recent_matches = $conn->query($recent_query);
-}
-
-// ===== ALL TEAMS =====
-$all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
-
-// ===== IMAGE HELPER =====
+// FIX 2: Correct Image Path
 function getImage($file) {
     if (empty($file)) return "https://via.placeholder.com/50";
-    
-    // Changed "/../uploads/" to "/uploads/"
     $server_path = __DIR__ . "/uploads/" . $file; 
-    
     if (file_exists($server_path)) {
-        return "uploads/" . $file; // Also removed ../ here
+        return "uploads/" . $file;
     }
     return "https://via.placeholder.com/50";
 }
@@ -784,9 +721,9 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="<?php echo $base; ?>/ICS_APP_DEV1/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
+            <a href="userManagement/profile.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
-            <a href="<?php echo $base; ?>/ICS_APP_DEV1/authentication/login.php" class="login-btn-top">Login</a>
+            <a href="authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>
     </div>
 </div>
