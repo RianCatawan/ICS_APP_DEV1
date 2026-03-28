@@ -24,7 +24,7 @@ $today = date('Y-m-d');
 $match_date = date('Y-m-d', strtotime($match['reservation_date']));
 
 if ($match['final_status'] === 'confirmed') {
-    die("<script>alert('This match is already finished.'); window.location.href='/match_system/upcoming_reservation';</script>");
+    die("<script>alert('This match is already finished.'); window.location.href='/ICS_APP_DEV1/match_system/upcoming_reservation';</script>");
 }
 if ($today > $match_date) {
     die("<script>alert('Match time has expired.'); window.location.href='upcoming_reservation.php';</script>");
