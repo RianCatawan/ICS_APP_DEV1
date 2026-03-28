@@ -65,7 +65,7 @@ if ($today > $match_date) {
             </div>
         </div>
 
-        <form action="save_result.php" method="POST" class="mt-5" onsubmit="return confirm('Finalize this score? This cannot be undone.');">
+        <form action="/ICS_APP_DEV1/match_system/save_result.php" method="POST" class="mt-5" onsubmit="return confirm('Finalize this score? This cannot be undone.');">
             <input type="hidden" name="match_id" value="<?= $match_id ?>">
             <input type="hidden" name="h_score" id="h_val" value="0">
             <input type="hidden" name="a_score" id="a_val" value="0">
