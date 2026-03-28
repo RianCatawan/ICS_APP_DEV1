@@ -1,9 +1,11 @@
 <?php
 session_start();
+
+// FIX 1: Removed /../ because db.php is now a direct subfolder
 include(__DIR__ . '/database&config/db.php');
 
 $current_user = $_SESSION['username'] ?? '';
-$base = "";
+$base = ""; // Kept empty as your site is now at the root of the 'basketball' URL
 
 $user_info = ['team_name' => 'None', 'active_team_id' => 0];
 
@@ -22,80 +24,17 @@ if (!empty($current_user)) {
     }
 }
 
-// ===== BATTLE HISTORY =====
-if ($user_info['active_team_id'] > 0) {
-    $history_query = "
-        SELECT mr.home_score, mr.away_score, mr.winner_id, mr.challenger_team_id,
-               t1.id as home_id, t1.team_name as home_n, t1.team_photo as home_p,
-               t2.id as away_id, t2.team_name as away_n, t2.team_photo as away_p,
-               r.reservation_date
-        FROM match_requests mr
-        JOIN reservations r ON mr.reservation_id = r.id
-        JOIN teams t1 ON r.team_id = t1.id
-        JOIN teams t2 ON mr.challenger_team_id = t2.id
-        WHERE mr.final_status = 'confirmed'
-          AND (t1.id = ? OR t2.id = ?)
-        ORDER BY r.reservation_date DESC
-        LIMIT 5
-    ";
-    $stmt = $conn->prepare($history_query);
-    $stmt->bind_param("ii", $user_info['active_team_id'], $user_info['active_team_id']);
-    $stmt->execute();
-    $history_matches = $stmt->get_result();
-} else {
-    $history_query = "
-        SELECT mr.home_score, mr.away_score, mr.winner_id, mr.challenger_team_id,
-               t1.id as home_id, t1.team_name as home_n, t1.team_photo as home_p,
-               t2.id as away_id, t2.team_name as away_n, t2.team_photo as away_p,
-               r.reservation_date
-        FROM match_requests mr
-        JOIN reservations r ON mr.reservation_id = r.id
-        JOIN teams t1 ON r.team_id = t1.id
-        JOIN teams t2 ON mr.challenger_team_id = t2.id
-        WHERE mr.final_status = 'confirmed'
-        ORDER BY r.reservation_date DESC
-        LIMIT 5
-    ";
-    $history_matches = $conn->query($history_query);
-}
+// ... (Keep your SQL queries for Battle History and Recent Matches exactly the same) ...
 
-// ===== RECENT MATCHES =====
-if ($user_info['active_team_id'] > 0) {
-    $recent_query = "
-        SELECT r.*, t.team_name, t.team_photo 
-        FROM reservations r 
-        JOIN teams t ON r.team_id = t.id 
-        WHERE r.team_id = ?
-        ORDER BY r.reservation_date DESC 
-        LIMIT 10
-    ";
-    $stmt = $conn->prepare($recent_query);
-    $stmt->bind_param("i", $user_info['active_team_id']);
-    $stmt->execute();
-    $recent_matches = $stmt->get_result();
-} else {
-    $recent_query = "
-        SELECT r.*, t.team_name, t.team_photo 
-        FROM reservations r 
-        JOIN teams t ON r.team_id = t.id 
-        ORDER BY r.reservation_date DESC 
-        LIMIT 10
-    ";
-    $recent_matches = $conn->query($recent_query);
-}
-
-// ===== ALL TEAMS =====
-$all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
-
-// ===== IMAGE HELPER =====
+// FIX 2: Corrected the Image Helper paths
 function getImage($file) {
     if (empty($file)) return "https://via.placeholder.com/50";
     
-    // Changed "/../uploads/" to "/uploads/"
-    $server_path = __DIR__ . "/uploads/" . $file; 
+    // Look in the uploads folder inside the current directory
+    $server_path = __DIR__ . "/uploads/" . $file;
     
     if (file_exists($server_path)) {
-        return "uploads/" . $file; // Also removed ../ here
+        return "uploads/" . $file; // Return path relative to index.php
     }
     return "https://via.placeholder.com/50";
 }
