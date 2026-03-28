@@ -10,7 +10,7 @@ if(isset($_POST['login'])){
     if($username === 'admin' && $password === 'password'){
         $_SESSION['username'] = 'admin';
         $_SESSION['role'] = 'admin'; // Set role as admin
-        header("Location: /dashboard_and_admin/admin.php");
+        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -30,7 +30,7 @@ if(isset($_POST['login'])){
             $log_stmt->bind_param("s", $row['username']);
             $log_stmt->execute();
 
-            header("Location: /userManagement/profile.php?sid=" . urlencode($row['username']));
+            header("Location: /ICS_APP_DEV1/userManagement/profile.php?sid=" . urlencode($row['username']));
             exit();
         } else {
             $error = "Invalid password. Please try again.";
