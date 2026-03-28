@@ -444,11 +444,11 @@ body {
 
 <!-- NAVBAR -->
 <nav class="navbar">
-    <a class="navbar-brand" href="/dashboard_and_admin/index.php">
+    <a class="navbar-brand" href="/ICS_APP_DEV1/dashboard_and_admin/index.php">
         <i class="bi bi-dribbble" style="color:var(--amber);font-size:1.3rem"></i>
         NBSC Match Maker
     </a>
-    <a href="/authentication/login.php" class="nav-login-btn">
+    <a href="/ICS_APP_DEV1/authentication/login.php" class="nav-login-btn">
         <i class="bi bi-box-arrow-in-right"></i> Sign In
     </a>
 </nav>
@@ -586,7 +586,7 @@ body {
 
             <div class="login-redirect">
                 <span>Already have an account? </span>
-                <a href="/authentication/login.php">Sign in here</a>
+                <a href="/ICS_APP_DEV1/authentication/login.php">Sign in here</a>
             </div>
 
         </form>
