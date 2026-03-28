@@ -39,5 +39,5 @@ $update->bind_param("iiii", $home_score, $away_score, $winner_id, $match_id);
 $update->execute();
 
 // Redirect to history
-header("Location: /Teams&history1/battle_history.php");
+header("Location: /ICS_APP_DEV1/Teams&history1/battle_history.php");
 exit();
