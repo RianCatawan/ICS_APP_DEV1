@@ -1,6 +1,7 @@
 <?php
 session_start();
-include(__DIR__ . '/database_config/db.php');
+// Use require_once for stability
+require_once(__DIR__ . '/database_config/db.php');
 
 $current_user = $_SESSION['username'] ?? '';
 $base = "";
@@ -87,17 +88,16 @@ if ($user_info['active_team_id'] > 0) {
 // ===== ALL TEAMS =====
 $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
 
-// ===== IMAGE HELPER =====
+// ===== IMAGE HELPER FIXED =====
 function getImage($file) {
-    if (empty($file)) return "https://via.placeholder.com/50";
+    if (empty($file)) return "https://via.placeholder.com/150?text=No+Photo";
     
-    // Changed "/../uploads/" to "/uploads/"
-    $server_path = __DIR__ . "/uploads/" . $file; 
+    // Logic: Web browsers cannot read absolute system paths like C:/xampp...
+    // They need relative URL paths. 
+    $url_path = "uploads/" . $file; 
     
-    if (file_exists($server_path)) {
-        return "uploads/" . $file; // Also removed ../ here
-    }
-    return "https://via.placeholder.com/50";
+    // Return the relative URL for the <img> tag
+    return $url_path;
 }
 ?>
 <!DOCTYPE html>
@@ -196,23 +196,6 @@ a:hover { color: var(--amber); }
     letter-spacing: 0.02em;
 }
 
-.nav-link {
-    color: var(--sky-light);
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    text-decoration: none;
-    padding: 5px 13px;
-    border-radius: var(--radius-pill);
-    transition: background 0.2s, color 0.2s;
-}
-.nav-link:hover, .nav-link.active {
-    background: var(--amber);
-    color: var(--navy-deep);
-}
-
-/* ── Login / Profile Button ── */
 .login-btn-top {
     background: var(--amber);
     color: var(--navy-deep) !important;
@@ -234,19 +217,6 @@ a:hover { color: var(--amber); }
     border-color: var(--amber);
 }
 
-/* ── Page Header ── */
-.page-header {
-    background: var(--navy);
-    border-radius: var(--radius-lg);
-    padding: 22px 26px;
-    margin-bottom: 28px;
-    border-left: 5px solid var(--amber);
-    box-shadow: var(--shadow-sm);
-}
-.page-header h1, .page-header h2 { color: var(--amber-warm); margin: 0; }
-.page-header p { color: var(--sky-light); font-size: 0.85rem; margin: 4px 0 0; }
-
-/* ── Section Header ── */
 .section-header {
     display: flex;
     align-items: center;
@@ -262,177 +232,11 @@ a:hover { color: var(--amber); }
     border-radius: 2px;
     flex-shrink: 0;
 }
-.section-header h2,
-.section-header h3 {
-    margin: 0;
-    font-size: 1.05rem;
-    color: var(--navy);
-}
 
-/* ── Section headings with text-warning ── */
 .text-warning {
     color: var(--amber) !important;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.01em;
-}
-
-/* ── Navbar username text ── */
-.text-white {
-    color: var(--white) !important;
-}
-
-/* ── Buttons ── */
-.btn, button, input[type="submit"] {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 9px 22px;
-    border-radius: var(--radius-pill);
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: 0.22s ease;
-    display: inline-block;
-    text-decoration: none;
-    line-height: 1;
-}
-.btn-primary, .reserve-btn,
-button[type="submit"], input[type="submit"] {
-    background: var(--amber);
-    color: var(--navy-deep);
-    border-color: var(--amber);
-}
-.btn-primary:hover, .reserve-btn:hover,
-button[type="submit"]:hover, input[type="submit"]:hover {
-    background: transparent;
-    color: var(--amber);
-    border-color: var(--amber);
-}
-.btn-secondary {
-    background: transparent;
-    color: var(--navy);
-    border-color: var(--navy);
-}
-.btn-secondary:hover {
-    background: var(--navy);
-    color: var(--white);
-}
-.btn-dark {
-    background: var(--navy);
-    color: var(--amber-warm);
-    border-color: var(--navy);
-}
-.btn-dark:hover {
-    background: var(--amber);
-    color: var(--navy-deep);
-    border-color: var(--amber);
-}
-.btn-sm { padding: 5px 14px; font-size: 0.72rem; }
-.btn-lg { padding: 12px 32px; font-size: 0.95rem; }
-
-/* ── Forms ── */
-.form-group, .fg { margin-bottom: 16px; }
-
-label, .form-label {
-    display: block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--navy);
-    margin-bottom: 6px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="search"],
-input[type="date"],
-input[type="time"],
-select, textarea {
-    width: 100%;
-    padding: 10px 14px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius-md);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    color: var(--text-main);
-    background: var(--white);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-}
-input:focus, select:focus, textarea:focus {
-    border-color: var(--sky);
-    box-shadow: var(--shadow-glow);
-}
-input::placeholder, textarea::placeholder {
-    color: var(--text-muted);
-    font-weight: 400;
-}
-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230D2F6E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 38px;
-}
-textarea { resize: vertical; min-height: 100px; }
-
-.form-card {
-    background: var(--white);
-    border: 2px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 26px;
-    max-width: 480px;
-    box-shadow: var(--shadow-sm);
-}
-
-/* ── Cards ── */
-.card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    color: var(--text-main);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-.card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 4px;
-    background: linear-gradient(90deg, var(--sky), var(--amber));
-}
-.card:hover {
-    border-color: var(--sky);
-    box-shadow: var(--shadow-md);
-}
-.card-dark {
-    background: var(--navy);
-    border: 2px solid var(--navy-mid);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    color: var(--white);
-    box-shadow: var(--shadow-md);
-}
-.card-dark p, .card-dark span,
-.card-dark h4, .card-dark small { color: var(--white); }
-.card-dark small, .card-dark .text-muted { color: var(--sky-light); }
-
-.card-surface {
-    background: var(--sky-pale);
-    border: 1.5px solid var(--sky-light);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    color: var(--text-main);
 }
 
 /* ── History Card ── */
@@ -468,9 +272,7 @@ textarea { resize: vertical; min-height: 100px; }
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 0 0 0 var(--radius-sm);
-    letter-spacing: 0.06em;
     text-transform: uppercase;
-    font-family: 'Outfit', sans-serif;
 }
 
 .score-display {
@@ -480,50 +282,6 @@ textarea { resize: vertical; min-height: 100px; }
     color: var(--navy);
     line-height: 1;
 }
-.score-display.win { color: var(--amber); }
-
-/* ── Recent Card ── */
-.recent-card {
-    min-width: 160px;
-    background: var(--navy);
-    border: 1.5px solid var(--navy-mid);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-    color: var(--white);
-    transition: box-shadow 0.2s, border-color 0.2s;
-    box-shadow: var(--shadow-sm);
-    text-align: center;
-}
-.recent-card:hover {
-    border-color: var(--sky);
-    box-shadow: var(--shadow-md);
-}
-.recent-card p, .recent-card span,
-.recent-card h1, .recent-card h2,
-.recent-card h3, .recent-card h4,
-.recent-card h5, .recent-card .label { color: var(--white) !important; }
-.recent-card small,
-.recent-card .text-muted { color: var(--sky-light) !important; }
-.recent-card .fw-bold { color: var(--white) !important; }
-
-/* ── Team Card ── */
-.team-card {
-    min-width: 140px;
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 16px;
-    text-align: center;
-    color: var(--text-main);
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    box-shadow: var(--shadow-sm);
-}
-.team-card:hover {
-    border-color: var(--sky);
-    background: var(--sky-pale);
-    box-shadow: var(--shadow-md);
-}
-.team-card .fw-bold { color: var(--text-main); }
 
 /* ── Photos ── */
 .mini-photo {
@@ -539,7 +297,6 @@ textarea { resize: vertical; min-height: 100px; }
     transform: scale(1.1);
 }
 
-/* ── VS / Final Pill ── */
 .vs-text {
     background: var(--navy);
     color: var(--sky-light);
@@ -548,154 +305,9 @@ textarea { resize: vertical; min-height: 100px; }
     padding: 4px 11px;
     border-radius: var(--radius-pill);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-family: 'Outfit', sans-serif;
     display: inline-block;
 }
 
-/* ── Badges ── */
-.badge {
-    display: inline-block;
-    font-size: 0.64rem;
-    font-weight: 700;
-    padding: 3px 9px;
-    border-radius: var(--radius-pill);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-family: 'Outfit', sans-serif;
-}
-.badge-live, .badge.live         { background: var(--amber); color: var(--navy-deep); }
-.badge-upcoming, .badge.upcoming { background: var(--sky-pale); color: var(--navy-mid); border: 1px solid var(--sky); }
-.badge-winner, .badge.winner     { background: var(--amber); color: var(--navy-deep); }
-.badge-dark                      { background: var(--navy); color: var(--sky-light); }
-.badge-success                   { background: var(--success-bg); color: var(--success); border: 1px solid #5cc898; }
-.badge-danger                    { background: var(--danger-bg); color: var(--danger); border: 1px solid #e88880; }
-
-/* Bootstrap badge overrides */
-.badge.bg-warning,
-.bg-warning {
-    background: var(--amber) !important;
-    color: var(--navy-deep) !important;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.68rem;
-    letter-spacing: 0.05em;
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-}
-.text-dark { color: var(--navy-deep) !important; }
-
-/* ── Stat Cards ── */
-.stat-card {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    text-align: center;
-    box-shadow: var(--shadow-sm);
-}
-.stat-card.accent {
-    background: var(--navy);
-    border-color: var(--navy-mid);
-}
-.stat-card .stat-value {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--navy);
-    line-height: 1;
-}
-.stat-card.accent .stat-value { color: var(--amber-warm); }
-.stat-card .stat-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    margin-top: 4px;
-    font-family: 'Outfit', sans-serif;
-}
-.stat-card.accent .stat-label { color: var(--sky-light); }
-
-/* ── Tables ── */
-.table-wrapper {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-thead tr { background: var(--navy); }
-thead th {
-    padding: 11px 15px;
-    color: var(--amber-warm);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.83rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    text-align: left;
-    border: none;
-}
-tbody tr { border-bottom: 1px solid var(--sky-pale); transition: background 0.15s; }
-tbody tr:hover { background: var(--sky-pale); }
-tbody tr:last-child { border-bottom: none; }
-tbody td { padding: 11px 15px; color: var(--text-body); font-weight: 500; vertical-align: middle; }
-tfoot tr { background: var(--surface); border-top: 2px solid var(--border); }
-tfoot td { padding: 10px 15px; font-weight: 700; color: var(--navy); }
-
-/* ── Alerts ── */
-.alert {
-    padding: 12px 16px;
-    border-radius: var(--radius-md);
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    border-left: 4px solid transparent;
-}
-.alert-success { background: var(--success-bg); color: var(--success); border-left-color: #43A047; }
-.alert-danger, .alert-error { background: var(--danger-bg); color: var(--danger); border-left-color: #EF5350; }
-.alert-info    { background: var(--sky-pale); color: var(--navy-mid); border-left-color: var(--sky); }
-.alert-warning { background: var(--amber-pale); color: var(--navy-deep); border-left-color: var(--amber); }
-
-/* ── Modals ── */
-.modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(7, 26, 66, 0.55);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(2px);
-}
-.modal-box {
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 28px;
-    width: 90%; max-width: 480px;
-    position: relative;
-    box-shadow: 0 16px 48px rgba(13, 47, 110, 0.22);
-}
-.modal-header {
-    background: var(--navy);
-    color: var(--amber-warm);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 1.05rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    padding: 13px 20px;
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
-    margin: -28px -28px 20px -28px;
-}
-.modal-close {
-    position: absolute; top: 12px; right: 16px;
-    background: none; border: none;
-    color: var(--amber-warm); font-size: 1.3rem;
-    cursor: pointer; font-weight: 900; line-height: 1;
-}
-
-/* ── Scroll row ── */
 .scroll-container {
     display: flex;
     overflow-x: auto;
@@ -703,10 +315,26 @@ tfoot td { padding: 10px 15px; font-weight: 700; color: var(--navy); }
     padding-bottom: 14px;
 }
 .scroll-container::-webkit-scrollbar { height: 5px; }
-.scroll-container::-webkit-scrollbar-track { background: var(--sky-pale); border-radius: 10px; }
 .scroll-container::-webkit-scrollbar-thumb { background: var(--sky); border-radius: 10px; }
 
-/* ── Empty State ── */
+.team-card {
+    min-width: 140px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    text-align: center;
+}
+
+.recent-card {
+    min-width: 160px;
+    background: var(--navy);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    color: var(--white);
+    text-align: center;
+}
+
 .empty-state {
     padding: 2.5rem;
     background: var(--white);
@@ -714,60 +342,11 @@ tfoot td { padding: 10px 15px; font-weight: 700; color: var(--navy); }
     width: 100%;
     text-align: center;
     border: 2px dashed var(--sky-light);
-    color: var(--text-muted);
 }
-.empty-state p { color: var(--text-muted); margin: 0; }
-
-/* ── Dividers ── */
-hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
-.divider-gold { border: none; border-top: 2px solid var(--amber); margin: 20px 0; }
-
-/* ── Pagination ── */
-.pagination { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.page-btn {
-    background: var(--white);
-    color: var(--navy);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 6px 13px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: 0.2s;
-    font-family: 'Outfit', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.page-btn:hover, .page-btn.active {
-    background: var(--amber);
-    color: var(--navy-deep);
-    border-color: var(--amber);
-}
-
-/* ── Utility ── */
-.text-gold    { color: var(--amber) !important; }
-.text-navy    { color: var(--navy) !important; }
-.text-sky     { color: var(--sky) !important; }
-.bg-navy      { background: var(--navy) !important; }
-.bg-gold      { background: var(--amber) !important; }
-.bg-surface   { background: var(--surface) !important; }
-.bg-page      { background: var(--sky-pale) !important; }
-.bg-white     { background: var(--white) !important; }
-.border-navy  { border: 1.5px solid var(--navy) !important; }
-.border-gold  { border: 2px solid var(--amber) !important; }
-.border-sky   { border: 1.5px solid var(--sky) !important; }
-.rounded      { border-radius: var(--radius-sm) !important; }
-.rounded-lg   { border-radius: var(--radius-lg) !important; }
-.rounded-pill { border-radius: var(--radius-pill) !important; }
-.fw-black     { font-weight: 800 !important; }
-.fw-bold      { font-weight: 700 !important; }
-.uppercase    { text-transform: uppercase; letter-spacing: 0.06em; }
-.section      { margin-bottom: 32px; }
     </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <div class="navbar">
     <div>
         <span class="navbar-brand">
@@ -784,14 +363,13 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="<?php echo $base; ?>/ICS_APP_DEV1/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
+            <a href="/basketball/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
-            <a href="<?php echo $base; ?>/ICS_APP_DEV1/authentication/login.php" class="login-btn-top">Login</a>
+            <a href="/authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>
     </div>
 </div>
 
-<!-- BATTLE HISTORY -->
 <h4 class="mb-3 text-warning">
     <i class="bi bi-trophy-fill"></i> Battle History
 </h4>
@@ -832,7 +410,6 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
     <?php endif; ?>
 </div>
 
-<!-- RECENT / UPCOMING MATCHES -->
 <h4 class="mb-3 text-warning">
     <i class="bi bi-clock-history"></i> Recent / Upcoming Matches
 </h4>
@@ -846,7 +423,7 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
                 <img src="<?php echo $team_img; ?>" class="mini-photo">
             </div>
             <div class="fw-bold"><?php echo htmlspecialchars($r['team_name']); ?></div>
-            <div class="small text-muted"><?php echo date("M d, Y", strtotime($r['reservation_date'])); ?></div>
+            <div class="small text-white-50"><?php echo date("M d, Y", strtotime($r['reservation_date'])); ?></div>
         </div>
         <?php endwhile; ?>
     <?php else: ?>
@@ -854,23 +431,34 @@ hr { border: none; border-top: 1.5px solid var(--sky-pale); margin: 20px 0; }
     <?php endif; ?>
 </div>
 
-<!-- ALL TEAMS -->
 <div class="section">
     <div class="section-header">
         <h2>All Teams</h2>
     </div>
     <div class="scroll-container">
-        <?php while ($team = $all_teams->fetch_assoc()):
-            $team_img = getImage($team['team_photo']);
-        ?>
-        <div class="team-card">
-            <img src="<?php echo $team_img; ?>" class="mini-photo mb-2">
-            <div class="fw-bold text-truncate"><?php echo htmlspecialchars($team['team_name']); ?></div>
-        </div>
-        <?php endwhile; ?>
+        <?php if ($all_teams && $all_teams->num_rows > 0): ?>
+            <?php while ($team = $all_teams->fetch_assoc()):
+                $team_img = getImage($team['team_photo']);
+            ?>
+            <div class="team-card">
+                <img src="<?php echo $team_img; ?>" class="mini-photo mb-2">
+                <div class="fw-bold text-truncate"><?php echo htmlspecialchars($team['team_name']); ?></div>
+            </div>
+            <?php endwhile; ?>
+        <?php endif; ?>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Fix broken images on the fly if the file doesn't exist in the folder
+document.querySelectorAll('img').forEach(img => {
+    img.onerror = function() {
+        this.src = "https://via.placeholder.com/150?text=No+Photo";
+    };
+});
+</script>
+
 </body>
 </html>

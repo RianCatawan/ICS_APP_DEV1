@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php";
+require_once __DIR__ . '/../database_config/db.php';
 
 if(!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin'){
     header("Location: index.php");

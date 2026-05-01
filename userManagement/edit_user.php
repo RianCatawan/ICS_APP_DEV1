@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php";
+require_once __DIR__ . '/../database_config/db.php';
 
 // Ensure only admin can access
 if(!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin'){

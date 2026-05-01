@@ -1,6 +1,6 @@
 <?php
 session_start(); // Good practice to include
-include "db.php";
+require_once __DIR__ . '/../database_config/db.php';
 
 if (isset($_POST['done_match'])) {
     // Sanitize and cast inputs

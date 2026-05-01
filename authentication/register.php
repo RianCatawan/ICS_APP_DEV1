@@ -1,57 +1,57 @@
 <?php
 session_start();
-include(__DIR__ . '/database_config/db.php');
 
+// 1. Show errors so we can see what's wrong instead of 'Error 500'
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// 2. Fixed Path - Use __DIR__ to ensure Hostinger finds the file
+// Go up one level (..) then into the database_config folder
+require_once __DIR__ . '/../database_config/db.php';
 if (isset($_POST['submit_reg'])) {
+    $username   = $_POST['username'];
+    $password   = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $full_name  = $_POST['full_name'];
+    $student_id = $_POST['student_id']; 
+    $course     = $_POST['course'];
+    $contact    = $_POST['contact'];
+    $position   = $_POST['position'];
+    $skill      = $_POST['skill'];
 
-    $username  = $_POST['username'];
-    $password  = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $full_name = $_POST['full_name'];
-    $course    = $_POST['course'];
-    $contact   = $_POST['contact'];
-    $position  = $_POST['position'];
-    $skill     = $_POST['skill'];
+    try {
+        $conn->begin_transaction();
 
-    // ✅ CHECK IF USER EXISTS
-    $check = $conn->prepare("SELECT id FROM users WHERE username = ?");
-    $check->bind_param("s", $username);
-    $check->execute();
-    $check->store_result();
-
-    if ($check->num_rows > 0) {
-        $error = "Username already exists! Please choose another.";
-    } else {
-
-        // ✅ INSERT INTO USERS
-        $stmt1 = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        // 1. Create User
+        $stmt1 = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, 'player')");
         $stmt1->bind_param("ss", $username, $password);
+        $stmt1->execute();
+        
+        $new_user_id = $conn->insert_id; 
 
-        if ($stmt1->execute()) {
+        // 2. Create Player
+        $stmt2 = $conn->prepare("INSERT INTO players (user_id, student_id, full_name, course, contact, position, skill_level) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt2->bind_param("issssss", $new_user_id, $student_id, $full_name, $course, $contact, $position, $skill);
+        $stmt2->execute();
 
-            // ✅ INSERT INTO PLAYERS
-            $stmt2 = $conn->prepare("
-                INSERT INTO players (student_id, full_name, course, contact, position, skill_level) 
-                VALUES (?, ?, ?, ?, ?, ?)
-            ");
-            $stmt2->bind_param("ssssss", $username, $full_name, $course, $contact, $position, $skill);
+        $conn->commit();
 
-            if ($stmt2->execute()) {
+        // 3. Set Sessions
+        $_SESSION['user_id'] = $new_user_id;
+        $_SESSION['username'] = $username;
+        $_SESSION['role'] = 'player';
 
-                // 🔥 IMPORTANT: AUTO LOGIN
-                $_SESSION['username'] = $username;
-                $_SESSION['role'] = 'player';
+        // 4. THE REDIRECT (Fixes the "stuck" issue)
+        // Check FileZilla: folder must be 'userManagement' (lowercase 'u')
+        echo "<script>
+                alert('Registration successful!');
+                window.location.href='../userManagement/profile.php';
+              </script>";
+        exit();
 
-                // ✅ REDIRECT TO PROFILE (NO NEED ?sid anymore)
-                header("Location: ../userManagement/profile.php");
-                exit();
-
-            } else {
-                $error = "Error saving player info. Please try again.";
-            }
-
-        } else {
-            $error = "Error creating account. Please try again.";
-        }
+    } catch (Exception $e) {
+        $conn->rollback();
+        // This will tell you exactly what column is missing or what data is wrong
+        die("CRITICAL DATABASE ERROR: " . $e->getMessage());
     }
 }
 ?>
@@ -459,11 +459,11 @@ body {
 
 <!-- NAVBAR -->
 <nav class="navbar">
-    <a class="navbar-brand" href="/ICS_APP_DEV1/dashboard_and_admin/index.php">
+    <a class="navbar-brand" href="/basketball/index.php">
         <i class="bi bi-dribbble" style="color:var(--amber);font-size:1.3rem"></i>
         NBSC Match Maker
     </a>
-    <a href="/ICS_APP_DEV1/authentication/login.php" class="nav-login-btn">
+    <a href=/basketball/authentication/login.php class="nav-login-btn">
         <i class="bi bi-box-arrow-in-right"></i> Sign In
     </a>
 </nav>
@@ -601,7 +601,7 @@ body {
 
             <div class="login-redirect">
                 <span>Already have an account? </span>
-                <a href="/ICS_APP_DEV1/authentication/login.php">Sign in here</a>
+                <a href="/basketball/authentication/login.php">Sign in here</a>
             </div>
 
         </form>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+require_once __DIR__ . '/../database_config/db.php';
 
 // 1. Security Check (Adjust 'role' or 'username' based on your session logic)
 if (!isset($_SESSION['username'])) {
@@ -124,7 +124,7 @@ $user_logs = $conn->query($log_query);
             <div class="admin-card text-center">
                 <h6 class="text-uppercase fw-bold text-muted">Total Teams</h6>
                 <div class="stat-number"><?php echo $team_count; ?></div>
-                <a href="/userManagement/view_teams.php" class="btn btn-main mt-3 w-100">Manage Teams</a>
+                <a href="/basketball/userManagement/view_teams.php" class="btn btn-main mt-3 w-100">Manage Teams</a>
             </div>
         </div>
 
@@ -145,7 +145,7 @@ $user_logs = $conn->query($log_query);
                         <div class="fw-bold">User Access</div>
                         <small class="text-muted">Manage accounts</small>
                     </div>
-                    <a href="/userManagement/manage_users.php" class="btn btn-sm btn-main"><i class="bi bi-people"></i></a>
+                    <a href="/basketball/userManagement/manage_users.php" class="btn btn-sm btn-main"><i class="bi bi-people"></i></a>
                 </div>
 
                 <div class="task-item">
