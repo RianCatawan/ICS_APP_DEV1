@@ -12,7 +12,7 @@ if(isset($_POST['login'])){
         $_SESSION['username'] = 'admin';
         $_SESSION['role'] = 'admin'; 
         // FIX: Added /basketball/ prefix
-        header("Location: dashboard_and_admin/admin.php");
+        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -38,7 +38,7 @@ if(isset($_POST['login'])){
             }
 
             // FIX: Added /basketball/ prefix and ensured path is correct
-            header("Location: /userManagement/profile.php");
+            header("Location: /ICS_APP_DEV1/userManagement/profile.php");
             exit();
         } else {
             $error = "Invalid password. Please try again.";
