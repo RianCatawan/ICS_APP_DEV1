@@ -8,6 +8,16 @@ $base = "";
 
 $user_info = ['team_name' => 'None', 'active_team_id' => 0];
 
+if(isset($_SESSION['role'])){
+    if($_SESSION['role'] === 'admin'){
+        $backLink = '/ICS_APP_DEV1/dashboard_and_admin/admin.php';
+    } else {
+        $backLink = '/ICS_APP_DEV1/userManagement/profile.php';
+    }
+} else {
+    $backLink = '/ICS_APP_DEV1/index.php';
+}
+
 if (!empty($current_user)) {
     $stmt = $conn->prepare("
         SELECT p.active_team_id, t.team_name 
@@ -363,7 +373,7 @@ a:hover { color: var(--amber); }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
+            <a href="/ICS_APP_DEV1/index.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
             <a href="/ICS_APP_DEV1/authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>
