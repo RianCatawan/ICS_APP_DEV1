@@ -1,6 +1,7 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+// Use the relative path to ensure it finds db.php
+require_once __DIR__ . '/../database_config/db.php';
 
 if(isset($_POST['login'])){
     $username = $_POST['username'];
@@ -9,8 +10,9 @@ if(isset($_POST['login'])){
     // ── HARDCODED ADMIN CHECK ──
     if($username === 'admin' && $password === 'password'){
         $_SESSION['username'] = 'admin';
-        $_SESSION['role'] = 'admin'; // Set role as admin
-        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
+        $_SESSION['role'] = 'admin'; 
+        // FIX: Added /basketball/ prefix
+        header("Location: /basketball/dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -24,13 +26,19 @@ if(isset($_POST['login'])){
         $row = $result->fetch_assoc();
         if(password_verify($password, $row['password'])){
             $_SESSION['username'] = $row['username'];
-            $_SESSION['role'] = $row['role'] ?? 'player'; // Default role is player
+            $_SESSION['role'] = $row['role'] ?? 'player';
 
-            $log_stmt = $conn->prepare("INSERT INTO user_logs (username, action) VALUES (?, 'Logged In')");
-            $log_stmt->bind_param("s", $row['username']);
-            $log_stmt->execute();
+            // Log the login (Ensure table 'user_logs' has 'username' column)
+            try {
+                $log_stmt = $conn->prepare("INSERT INTO user_logs (user_id, action) VALUES (?, 'Logged In')");
+                $log_stmt->bind_param("i", $row['id']);
+                $log_stmt->execute();
+            } catch (Exception $e) {
+                // Silently fail if logs table is different, so user can still log in
+            }
 
-            header("Location: /ICS_APP_DEV1/userManagement/profile.php?sid=" . urlencode($row['username']));
+            // FIX: Added /basketball/ prefix and ensured path is correct
+            header("Location: /basketball/userManagement/profile.php");
             exit();
         } else {
             $error = "Invalid password. Please try again.";
@@ -243,8 +251,8 @@ if(isset($_POST['login'])){
         <i class="bi bi-dribbble"></i> NBSC MATCH MAKER
     </a>
     <div class="d-flex gap-2 align-items-center">
-        <a href="/ICS_APP_DEV1/index.php" class="btn-outline-custom">BACK TO HOME</a>
-        <a href="/ICS_APP_DEV1/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
+        <a href="/basketball/index.php" class="btn-outline-custom">BACK TO HOME</a>
+        <a href="/basketball/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
     </div>
 </nav>
 
@@ -276,7 +284,7 @@ if(isset($_POST['login'])){
 
         <div class="divider">OR</div>
 
-        <a href="/ICS_APP_DEV1/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
+        <a href="/basketball/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
             CREATE PLAYER ACCOUNT
         </a>
     </div>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+require_once __DIR__ . '/../database_config/db.php';
 
 $sid = $_SESSION['username'] ?? '';
 if (!$sid) die("You must be logged in to view this page.");
@@ -81,7 +81,7 @@ $reservations = $res_query->get_result()->fetch_all(MYSQLI_ASSOC);
 
 <header class="nb-header">
     <h4 class="m-0 text-warning fw-bold"><i class="bi bi-calendar-event-fill me-2"></i> SCHEDULE</h4>
-    <a href="/ICS_APP_DEV1/userManagement/profile.php" class="btn btn-sm btn-outline-light px-3">BACK</a>
+    <a href="/basketball/userManagement/profile.php" class="btn btn-sm btn-outline-light px-3">BACK</a>
 </header>
 
 <div class="container pb-5">
@@ -115,7 +115,7 @@ $reservations = $res_query->get_result()->fetch_all(MYSQLI_ASSOC);
                         <?php elseif($is_expired): ?>
                             <span class="badge bg-danger p-2 px-3 rounded-pill"><i class="bi bi-clock-history me-1"></i> EXPIRED</span>
                         <?php elseif($is_today): ?>
-                            <form action="/ICS_APP_DEV1/match_system/match_control.php" method="POST">
+                            <form action="/basketball/match_system/match_control.php" method="POST">
                                 <input type="hidden" name="match_id" value="<?= $res['match_id'] ?>">
                                 <button type="submit" class="btn btn-start shadow-sm">
                                     <i class="bi bi-play-btn-fill"></i> START GAME

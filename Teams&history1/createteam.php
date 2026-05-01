@@ -1,10 +1,10 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+require_once __DIR__ . '/../database_config/db.php';
 
 // Redirect to login if not logged in
 if (!isset($_SESSION['username'])) {
-    header("Location: /ICS_APP_DEV1authentication/login.php");
+    header("Location: /basketball/authentication/login.php");
     exit();
 }
 
@@ -45,8 +45,7 @@ if (isset($_POST['create'])) {
             $stmt_player->execute();
         }
 
-        echo "<script>alert('Team Created and Activated!'); window.location.href='/ICS_APP_DEV1/challenges&scheduling/selectdatetime.php?team_id=$team_id&sid=$creator';</script>";
-    }
+echo "<script>alert('Team Created and Activated!'); window.location.href='../challenges&scheduling/selectdatetime.php?team_id=$team_id&sid=$creator';</script>";    }
 }
 ?>
 

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+require_once __DIR__ . '/../database_config/db.php';
 
 $sid = $_SESSION['username'] ?? '';
 if (empty($sid)) { 
@@ -34,6 +34,7 @@ $status_query = $conn->prepare("
     JOIN teams t1 ON r.team_id = t1.id
     JOIN teams t2 ON mr.challenger_team_id = t2.id
     WHERE (t1.created_by = ? OR t2.created_by = ?)
+    AND mr.status != 'rejected'
 ");
 $status_query->bind_param("ss", $sid, $sid);
 $status_query->execute();
@@ -101,13 +102,10 @@ while($m = $status_results->fetch_assoc()) {
         
         /* ── BUTTON STYLES ── */
         .btn-action-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        
         .btn-book { background: var(--brand-primary); color: var(--brand-accent); border: 2px solid var(--brand-primary); font-family: 'Outfit'; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; padding: 8px 12px; border-radius: 8px; text-decoration: none; flex-grow: 1; text-align: center; }
         .btn-book:hover { background: var(--brand-accent); color: var(--brand-primary); border-color: var(--brand-accent); }
-
         .btn-find { background: transparent; color: var(--brand-primary); border: 2px solid var(--brand-primary); font-family: 'Outfit'; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; padding: 8px 12px; border-radius: 8px; text-decoration: none; flex-grow: 1; text-align: center; }
         .btn-find:hover { background: #f0f4f8; }
-
         .btn-edit-pill { background: transparent; color: #64748b; border: 2px solid #e2e8f0; font-family: 'Outfit'; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; padding: 8px 15px; border-radius: 8px; text-decoration: none; }
         .btn-edit-pill:hover { background: #f8fafc; border-color: #cbd5e1; color: var(--brand-primary); }
 
@@ -124,8 +122,8 @@ while($m = $status_results->fetch_assoc()) {
                 <p class="mb-0 opacity-75 small"><?= htmlspecialchars($sid); ?> | <?= $player['course'] ?? 'No Course Listed'; ?></p>
             </div>
             <div>
-                <a href="/ICS_APP_DEV1/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
-                <a href="/ICS_APP_DEV1/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
+                <a href="/basketball/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
+                <a href="/basketball/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
             </div>
         </div>
     </div>
@@ -138,9 +136,18 @@ while($m = $status_results->fetch_assoc()) {
                     $needs_my_approval = ($sid == $pm['home_owner'] && !$pm['home_approved']) || ($sid == $pm['away_owner'] && !$pm['challenger_approved']);
                 ?>
                     <div class="match-item <?= $needs_my_approval ? 'needs-approval' : ''; ?>">
-                        <div><?= $pm['home_n']; ?> <span class="opacity-50">vs</span> <?= $pm['away_n']; ?></div>
+                        <div><?= htmlspecialchars($pm['home_n']); ?> <span class="opacity-50">vs</span> <?= htmlspecialchars($pm['away_n']); ?></div>
+                        
                         <?php if($needs_my_approval): ?>
-                            <a href="/ICS_APP_DEV1/challenges&scheduling/confirmation_match.php?id=<?= $pm['id']; ?>" class="btn btn-warning btn-sm fw-bold py-0" style="font-size: 0.65rem;">APPROVE</a>
+                           <div class="d-flex gap-1">
+    <a href="/basketball/challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=accept" 
+       class="btn btn-success btn-sm fw-bold py-0" style="font-size: 0.65rem;">ACCEPT</a>
+    
+    <a href="/basketball/challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=decline" 
+       class="btn btn-danger btn-sm fw-bold py-0" style="font-size: 0.65rem;">DECLINE</a>
+</div>
+                        <?php else: ?>
+                            <span class="badge bg-secondary" style="font-size: 0.6rem;">WAITING...</span>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; if(empty($pending_matches)) echo "<p class='small text-muted'>No pending actions.</p>"; ?>
@@ -150,7 +157,7 @@ while($m = $status_results->fetch_assoc()) {
                 <h5 class="fw-800 text-uppercase small mb-3 text-muted">Confirmed Games</h5>
                 <?php foreach($done_matches as $dm): ?>
                     <div class="match-item border-success bg-light">
-                        <span><?= $dm['home_n']; ?> vs <?= $dm['away_n']; ?></span>
+                        <span><?= htmlspecialchars($dm['home_n']); ?> vs <?= htmlspecialchars($dm['away_n']); ?></span>
                         <span class="badge bg-success" style="font-size: 0.6rem;"><?= date('M d', strtotime($dm['reservation_date'])); ?></span>
                     </div>
                 <?php endforeach; if(empty($done_matches)) echo "<p class='small text-muted'>No games confirmed.</p>"; ?>
@@ -158,7 +165,7 @@ while($m = $status_results->fetch_assoc()) {
         </div>
 
         <div class="col-lg-8">
-            <a href="/ICS_APP_DEV1/match_system/upcoming_reservation.php" class="upcoming-highlight-card">
+            <a href="/basketball/match_system/upcoming_reservation.php" class="upcoming-highlight-card">
                 <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-calendar-check-fill fs-2" style="color: var(--brand-accent);"></i>
                     <div>
@@ -171,7 +178,7 @@ while($m = $status_results->fetch_assoc()) {
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-800 m-0">YOUR MANAGED TEAMS</h4>
-                <a href="/ICS_APP_DEV1/Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
+                <a href="/basketball/Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
             </div>
 
             <div class="row g-3">
@@ -186,15 +193,15 @@ while($m = $status_results->fetch_assoc()) {
                                 <p class="small text-muted mb-3"><?= $team['game_type']; ?> Squad</p>
                                 
                                 <div class="btn-action-group">
-                                    <a href="/ICS_APP_DEV1/challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
+                                    <a href="/basketball/challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
                                         <i class="bi bi-calendar-plus me-1"></i> BOOK
                                     </a>
                                     
-                                    <a href="/ICS_APP_DEV1/challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
-                                        <i class="bi bi-search me-1"></i> FIND MATCH
-                                    </a>
+                               <a href="/basketball/challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
+    <i class="bi bi-search me-1"></i> FIND MATCH
+</a>
 
-                                    <a href="/ICS_APP_DEV1/Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
+                                    <a href="/basketball/Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 </div>

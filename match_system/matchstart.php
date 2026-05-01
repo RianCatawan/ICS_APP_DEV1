@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php"; // Connect to database
+require_once __DIR__ . '/../database_config/db.php';
 
 $team1_name = $_POST['team1'] ?? '';
 $team2_name = $_POST['team2'] ?? '';

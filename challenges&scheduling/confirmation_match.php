@@ -1,6 +1,6 @@
 <?php
 session_start();
-include(__DIR__ . '/../database_config/db.php');
+require_once __DIR__ . '/../database_config/db.php';
 
 $req_id = $_GET['id'] ?? '';
 $current_user_sid = $_SESSION['username'] ?? '';
@@ -174,7 +174,7 @@ if (isset($_POST['click_approve'])) {
 <body>
 
 <div class="confirmation-box">
-    <a href="/ICS_APP_DEV1/userManagement/profile.php?sid=<?= $current_user_sid ?>" class="back-btn">
+    <a href="/basketball/userManagement/profile.php?sid=<?= $current_user_sid ?>" class="back-btn">
         <i class="bi bi-arrow-left"></i> BACK TO PROFILE
     </a>
 
