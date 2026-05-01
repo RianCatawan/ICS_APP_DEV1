@@ -44,7 +44,7 @@ if (isset($_POST['submit_reg'])) {
         // Check FileZilla: folder must be 'userManagement' (lowercase 'u')
         echo "<script>
                 alert('Registration successful!');
-                window.location.href='../userManagement/profile.php';
+                window.location.href='..ICS_APP_DEV1/userManagement/profile.php';
               </script>";
         exit();
 
@@ -459,11 +459,11 @@ body {
 
 <!-- NAVBAR -->
 <nav class="navbar">
-    <a class="navbar-brand" href="/basketball/index.php">
+    <a class="navbar-brand" href="/ICS_APP_DEV1/index.php">
         <i class="bi bi-dribbble" style="color:var(--amber);font-size:1.3rem"></i>
         NBSC Match Maker
     </a>
-    <a href=/basketball/authentication/login.php class="nav-login-btn">
+    <a href=/ICS_APP_DEV1/authentication/login.php class="nav-login-btn">
         <i class="bi bi-box-arrow-in-right"></i> Sign In
     </a>
 </nav>
@@ -601,7 +601,7 @@ body {
 
             <div class="login-redirect">
                 <span>Already have an account? </span>
-                <a href="/basketball/authentication/login.php">Sign in here</a>
+                <a href="/ICS_APP_DEV1/authentication/login.php">Sign in here</a>
             </div>
 
         </form>
