@@ -12,7 +12,7 @@ if(isset($_POST['login'])){
         $_SESSION['username'] = 'admin';
         $_SESSION['role'] = 'admin'; 
         // FIX: Added /basketball/ prefix
-        header("Location: /dashboard_and_admin/admin.php");
+        header("Location: dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -251,8 +251,8 @@ if(isset($_POST['login'])){
         <i class="bi bi-dribbble"></i> NBSC MATCH MAKER
     </a>
     <div class="d-flex gap-2 align-items-center">
-        <a href="/index.php" class="btn-outline-custom">BACK TO HOME</a>
-        <a href="/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
+        <a href="index.php" class="btn-outline-custom">BACK TO HOME</a>
+        <a href="authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
     </div>
 </nav>
 
@@ -284,7 +284,7 @@ if(isset($_POST['login'])){
 
         <div class="divider">OR</div>
 
-        <a href="/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
+        <a href="authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
             CREATE PLAYER ACCOUNT
         </a>
     </div>
