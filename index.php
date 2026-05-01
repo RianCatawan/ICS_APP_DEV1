@@ -363,9 +363,9 @@ a:hover { color: var(--amber); }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="/basketball/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
+            <a href="userManagement/profile.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
-            <a href="/authentication/login.php" class="login-btn-top">Login</a>
+            <a href="authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>
     </div>
 </div>
