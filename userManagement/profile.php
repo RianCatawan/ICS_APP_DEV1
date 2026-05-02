@@ -122,8 +122,8 @@ while($m = $status_results->fetch_assoc()) {
                 <p class="mb-0 opacity-75 small"><?= htmlspecialchars($sid); ?> | <?= $player['course'] ?? 'No Course Listed'; ?></p>
             </div>
             <div>
-                <a href="/basketball/index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
-                <a href="/basketball/authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
+                <a href="index.php" class="btn btn-outline-light btn-sm fw-bold me-2 px-3 rounded-pill">HOME</a>
+                <a href="authentication/logout.php" class="btn btn-danger btn-sm fw-bold px-3 rounded-pill">LOGOUT</a>
             </div>
         </div>
     </div>
@@ -140,10 +140,10 @@ while($m = $status_results->fetch_assoc()) {
                         
                         <?php if($needs_my_approval): ?>
                            <div class="d-flex gap-1">
-    <a href="/basketball/challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=accept" 
+    <a href="challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=accept" 
        class="btn btn-success btn-sm fw-bold py-0" style="font-size: 0.65rem;">ACCEPT</a>
     
-    <a href="/basketball/challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=decline" 
+    <a href="challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=decline" 
        class="btn btn-danger btn-sm fw-bold py-0" style="font-size: 0.65rem;">DECLINE</a>
 </div>
                         <?php else: ?>
@@ -165,7 +165,7 @@ while($m = $status_results->fetch_assoc()) {
         </div>
 
         <div class="col-lg-8">
-            <a href="/basketball/match_system/upcoming_reservation.php" class="upcoming-highlight-card">
+            <a href="match_system/upcoming_reservation.php" class="upcoming-highlight-card">
                 <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-calendar-check-fill fs-2" style="color: var(--brand-accent);"></i>
                     <div>
@@ -178,7 +178,7 @@ while($m = $status_results->fetch_assoc()) {
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-800 m-0">YOUR MANAGED TEAMS</h4>
-                <a href="/basketball/Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
+                <a href="Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
             </div>
 
             <div class="row g-3">
@@ -193,15 +193,15 @@ while($m = $status_results->fetch_assoc()) {
                                 <p class="small text-muted mb-3"><?= $team['game_type']; ?> Squad</p>
                                 
                                 <div class="btn-action-group">
-                                    <a href="/basketball/challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
+                                    <a href="challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
                                         <i class="bi bi-calendar-plus me-1"></i> BOOK
                                     </a>
                                     
-                               <a href="/basketball/challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
+                               <a href="challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
     <i class="bi bi-search me-1"></i> FIND MATCH
 </a>
 
-                                    <a href="/basketball/Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
+                                    <a href="Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                 </div>
