@@ -161,8 +161,8 @@ $final_matches = array_merge($challengeable, $my_reservations, $expired);
     </div>
     
     <div class="d-flex justify-content-center gap-3 mt-4">
-        <a href="/basketball/userManagement/profile.php?sid=<?php echo $current_user; ?>" class="btn btn-dark px-4 py-2 fw-bold">MY PROFILE</a>
-        <a href="/basketball/challenges&scheduling/selectdatetime.php" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">NEW RESERVATION</a>
+        <a href="../userManagement/profile.php?sid=<?php echo $current_user; ?>" class="btn btn-dark px-4 py-2 fw-bold">MY PROFILE</a>
+        <a href="../challenges&scheduling/selectdatetime.php" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">NEW RESERVATION</a>
     </div>
 </div>
 </body>
