@@ -35,6 +35,6 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 // THE FIX: Redirect specifically to the basketball folder index
-header("Location: ../ICS_APP_DEV1/index.php");
+header("Location: ../index.php");
 exit();
 ?>
