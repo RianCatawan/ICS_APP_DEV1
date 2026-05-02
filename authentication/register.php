@@ -29,7 +29,7 @@ if (isset($_POST['submit_reg'])) {
         $new_user_id = $conn->insert_id; 
 
         // 2. Create Player
-        $stmt2 = $conn->prepare("INSERT INTO players (user_id, student_id, full_name, course, contact, position, skill_level) VALUES (?, ?, ?, ?, ?, ?, ?)");
+       $stmt2 = $conn->prepare("INSERT INTO players (userid, student_id, full_name, course, contact, position, skill_level) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt2->bind_param("issssss", $new_user_id, $student_id, $full_name, $course, $contact, $position, $skill);
         $stmt2->execute();
 
