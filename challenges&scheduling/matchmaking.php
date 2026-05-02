@@ -33,8 +33,7 @@ $stmt = $conn->prepare($query);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// FETCH RESERVATIONS ALREADY CHALLENGED BY MY TEAM
-// This gets all reservation IDs where my team has already sent a match request
+// FETCH ALREADY CHALLENGED RESERVATION IDS
 $already_challenged_ids = [];
 if ($my_team_id > 0) {
     $ch_stmt = $conn->prepare("
@@ -51,29 +50,88 @@ if ($my_team_id > 0) {
     }
 }
 
-// ORGANIZE INTO THREE BUCKETS
-$challengeable = [];
-$my_reservations = [];
-$expired = [];
+// ORGANIZE INTO BUCKETS
+$open_challengeable = [];
+$match_requested    = [];
+$my_reservations    = [];
+$expired            = [];
 
-while($row = $result->fetch_assoc()) {
-    $is_mine = ($row['team_owner'] === $current_user);
+while ($row = $result->fetch_assoc()) {
+    $is_mine    = ($row['team_owner'] === $current_user);
     $is_expired = ($row['reservation_date'] < $today);
+    $is_challenged = !$is_mine && !$is_expired && in_array($row['id'], $already_challenged_ids);
 
-    // Tag if already challenged by my team
-    $row['already_challenged'] = in_array($row['id'], $already_challenged_ids);
+    $row['already_challenged'] = $is_challenged;
 
-    if ($is_expired) {
-        $expired[] = $row;
-    } elseif ($is_mine) {
-        $my_reservations[] = $row;
-    } else {
-        $challengeable[] = $row;
-    }
+    if ($is_expired)         { $expired[]            = $row; }
+    elseif ($is_mine)        { $my_reservations[]    = $row; }
+    elseif ($is_challenged)  { $match_requested[]    = $row; }
+    else                     { $open_challengeable[] = $row; }
 }
 
-// MERGE IN THE REQUESTED ORDER: 1. Challengeable, 2. Mine, 3. Expired
-$final_matches = array_merge($challengeable, $my_reservations, $expired);
+// ── CARD RENDER FUNCTION ────────────────────────────────────────────────────
+function renderCard($row, $is_mine, $is_expired, $is_challenged, $my_team_id) {
+    $card_class = $is_mine ? 'my-match' : ($is_expired ? 'expired' : ($is_challenged ? 'challenged' : ''));
+
+    if ($is_expired)        { $badge_bg = '#dc2626'; $badge_color = '#fff'; $badge_text = 'EXPIRED'; }
+    elseif ($is_mine)       { $badge_bg = '#16a34a'; $badge_color = '#fff'; $badge_text = 'MY RESERVATION'; }
+    elseif ($is_challenged) { $badge_bg = '#2563EB'; $badge_color = '#fff'; $badge_text = 'MATCH REQUESTED'; }
+    else                    { $badge_bg = '#1D4ED8'; $badge_color = '#fff'; $badge_text = 'CHALLENGEABLE'; }
+    ?>
+    <div class="match-card <?= $card_class ?>">
+        <span class="status-badge" style="background:<?= $badge_bg ?>; color:<?= $badge_color ?>;">
+            <?= $badge_text ?>
+        </span>
+
+        <div class="text-center mb-1 mt-3">
+            <span class="type-badge"><?= strtoupper($row['game_type']) ?></span>
+        </div>
+
+        <div class="team-photo-container">
+            <?php if (!empty($row['team_photo']) && file_exists("../uploads/" . $row['team_photo'])): ?>
+                <img src="../uploads/<?= $row['team_photo'] ?>" class="w-100 h-100" style="object-fit:cover;">
+            <?php else: ?>
+                <i class="bi bi-shield-shaded fs-2 text-muted"></i>
+            <?php endif; ?>
+        </div>
+
+        <h5 class="team-title"><?= strtoupper($row['team_name']) ?></h5>
+
+        <div class="match-details">
+            <div class="fw-bold mb-1 <?= $is_expired ? 'text-danger' : 'text-dark' ?>" style="font-size:0.82rem;">
+                <i class="bi bi-calendar3 me-1"></i>
+                <?= date('M d, Y', strtotime($row['reservation_date'])) ?>
+            </div>
+            <div class="text-muted" style="font-size:0.78rem;">
+                <i class="bi bi-clock me-1"></i><?= $row['selected_time'] ?>
+            </div>
+        </div>
+
+        <div class="mt-auto">
+            <?php if ($is_expired): ?>
+                <button class="btn btn-secondary w-100 btn-action" disabled>VOID</button>
+
+            <?php elseif ($is_mine): ?>
+                <button class="btn btn-outline-success w-100 btn-action" disabled>MANAGE IN PROFILE</button>
+
+            <?php elseif ($is_challenged): ?>
+                <button class="btn-match-found" disabled>
+                    <i class="bi bi-check-circle-fill"></i> MATCH FOUND
+                </button>
+                <p class="match-found-note">
+                    <i class="bi bi-hourglass-split me-1"></i>Awaiting confirmation
+                </p>
+
+            <?php else: ?>
+                <a href="send_challenge.php?res_id=<?= $row['id'] ?>&challenger_id=<?= $my_team_id ?>"
+                   class="btn btn-warning w-100 btn-action fw-bold">
+                    <i class="bi bi-lightning-fill me-1"></i>CHALLENGE NOW
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -88,32 +146,38 @@ $final_matches = array_merge($challengeable, $my_reservations, $expired);
 
         :root {
             --brand-primary: #0A192F;
-            --brand-accent: #FFB800;
+            --brand-accent:  #FFB800;
             --brand-success: #00E676;
             --brand-matched: #3B82F6;
-            --bg-body: #F4F7FA;
-            --surface-card: #FFFFFF;
-            --border-color: #E2E8F0;
-            --radius-lg: 16px;
-            --radius-md: 10px;
+            --bg-body:       #F4F7FA;
+            --radius-lg:     16px;
+            --radius-md:     10px;
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
 
         body {
-            background-color: var(--bg-body);
+            background: var(--bg-body);
             color: #4A5568;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
         }
 
+        /* ── STICKY HEADER ── */
         .page-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
             background: var(--brand-primary);
-            padding: 25px 35px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 30px;
+            padding: 16px 28px;
             border-bottom: 5px solid var(--brand-accent);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
 
         .page-header h2 {
@@ -121,245 +185,320 @@ $final_matches = array_merge($challengeable, $my_reservations, $expired);
             font-weight: 800;
             color: var(--brand-accent);
             margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
         }
 
-        .match-scroll {
+        .back-btn-top {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 7px 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            letter-spacing: 0.5px;
+            transition: 0.2s;
+        }
+
+        .back-btn-top:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        /* ── MAIN CONTENT AREA ── */
+        .main-content {
+            flex-grow: 1;
+            padding: 0 24px 24px 24px;
+        }
+
+        /* ── SECTION DIVIDERS ── */
+        .section-label {
             display: flex;
-            overflow-x: auto;
-            gap: 25px;
-            padding: 10px 5px 30px 5px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--brand-accent) transparent;
+            align-items: center;
+            gap: 12px;
+            margin: 28px 0 16px 0;
         }
 
+        .label-pill {
+            font-family: 'Outfit';
+            font-weight: 800;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 5px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+        }
+
+        .label-line {
+            flex-grow: 1;
+            height: 1px;
+            background: #E2E8F0;
+        }
+
+        .label-count {
+            font-size: 0.72rem;
+            color: #94A3B8;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ── 4-COLUMN RESPONSIVE GRID ── */
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 1280px) { .match-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width:  900px) { .match-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width:  540px) { .match-grid { grid-template-columns: 1fr; } }
+
+        /* ── CARD ── */
         .match-card {
-            min-width: 340px;
-            background: var(--surface-card);
+            background: #FFFFFF;
             border-radius: var(--radius-lg);
-            border: 2px solid var(--border-color);
-            padding: 25px;
+            border: 2px solid #E2E8F0;
+            padding: 20px 16px 16px 16px;
             position: relative;
-            transition: 0.3s;
             display: flex;
             flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* CARD VARIATIONS */
-        .match-card.my-match  { border-color: var(--brand-success); background: #f0fff4; }
-        .match-card.expired   { opacity: 0.6; filter: grayscale(0.6); border-style: dashed; }
-        .match-card.challenged {
-            border-color: var(--brand-matched);
-            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        .match-card:not(.expired):hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.1);
         }
 
+        .match-card.my-match   { border-color: #22c55e; background: #f0fff4; }
+        .match-card.expired    { opacity: 0.5; filter: grayscale(0.55); border-style: dashed; border-color: #CBD5E1; }
+        .match-card.challenged { border-color: var(--brand-matched); background: linear-gradient(145deg, #EFF6FF, #DBEAFE); }
+
+        /* ── STATUS BADGE (centred top) ── */
         .status-badge {
             position: absolute;
-            top: -12px;
-            right: 20px;
-            padding: 4px 15px;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 3px 13px;
             border-radius: 30px;
-            font-size: 0.7rem;
+            font-size: 0.62rem;
             font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
+        /* ── GAME TYPE BADGE ── */
         .type-badge {
             background: var(--brand-primary);
             color: var(--brand-accent);
             padding: 3px 10px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            text-align: center;
+            display: inline-block;
         }
 
+        /* ── TEAM PHOTO ── */
         .team-photo-container {
-            width: 90px;
-            height: 90px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            border: 4px solid var(--brand-accent);
-            margin: 0 auto 15px auto;
+            border: 3px solid var(--brand-accent);
+            margin: 10px auto 10px auto;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #fff;
+            flex-shrink: 0;
         }
 
-        .match-card.challenged .team-photo-container {
-            border-color: var(--brand-matched);
-        }
+        .match-card.challenged .team-photo-container { border-color: var(--brand-matched); }
+        .match-card.my-match   .team-photo-container { border-color: #22c55e; }
 
+        /* ── TEAM NAME ── */
         .team-title {
             text-align: center;
             font-family: 'Outfit';
             font-weight: 800;
             color: var(--brand-primary);
-            font-size: 1.25rem;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            line-height: 1.2;
         }
 
+        /* ── DATE / TIME ── */
         .match-details {
             background: rgba(0,0,0,0.03);
             border-radius: var(--radius-md);
-            padding: 12px;
-            margin-bottom: 15px;
+            padding: 9px 10px;
+            margin-bottom: 12px;
             text-align: center;
-            font-size: 0.85rem;
         }
 
-        .btn-challenge {
+        /* ── ACTION BUTTONS ── */
+        .btn-action {
             border-radius: var(--radius-md);
-            padding: 10px;
+            padding: 8px;
             font-weight: 800;
             text-transform: uppercase;
+            font-size: 0.75rem;
         }
 
-        /* MATCH FOUND button — pulsing blue */
         .btn-match-found {
             border-radius: var(--radius-md);
-            padding: 10px;
+            padding: 9px 8px;
             font-weight: 800;
             text-transform: uppercase;
             background: var(--brand-matched);
             color: #fff;
             border: none;
             width: 100%;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             cursor: default;
-            animation: pulse-blue 2s infinite;
+            animation: pulse-blue 2.2s infinite;
         }
 
         @keyframes pulse-blue {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
-            50%       { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+            0%, 100% { box-shadow: 0 0 0 0   rgba(59,130,246,0.5); }
+            50%       { box-shadow: 0 0 0 8px rgba(59,130,246,0);   }
         }
 
-        /* Small tag under the Match Found button */
         .match-found-note {
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.62rem;
             color: var(--brand-matched);
             font-weight: 700;
-            margin-top: 8px;
-            letter-spacing: 0.5px;
+            margin-top: 6px;
         }
 
-        .back-btn-top {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 8px 18px;
-            border-radius: var(--radius-md);
-            text-decoration: none;
-            font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.2);
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #94A3B8;
+        }
+
+        /* ── BOTTOM BAR ── */
+        .bottom-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 28px 24px;
+            border-top: 1px solid #E2E8F0;
+            background: #fff;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-<div class="container-fluid px-4">
-    <div class="page-header">
-        <div>
-            <h2><i class="bi bi-lightning-charge-fill"></i> MATCHMAKING</h2>
-            <span class="text-white-50">Active challenges are shown first, followed by your teams and expired slots.</span>
-        </div>
-        <div class="d-flex align-items-center gap-4">
-            <div class="text-end text-white">
-                <small class="text-white-50 d-block">CHALLENGING AS:</small>
-                <span class="badge bg-warning text-dark px-3 py-2 fw-bold"><?php echo strtoupper($team_name); ?></span>
-            </div>
-            <a href="javascript:history.back()" class="back-btn-top">BACK</a>
-        </div>
+
+<!-- STICKY HEADER -->
+<div class="page-header">
+    <div>
+        <h2><i class="bi bi-lightning-charge-fill me-2"></i>MATCHMAKING</h2>
+        <span style="color:rgba(255,255,255,0.45); font-size:0.75rem;">
+            Open slots · Requested · My reservations · Expired
+        </span>
     </div>
-
-    <div class="match-scroll">
-        <?php if (!empty($final_matches)): ?>
-            <?php foreach($final_matches as $row):
-                $is_mine        = ($row['team_owner'] === $current_user);
-                $is_expired     = ($row['reservation_date'] < $today);
-                $is_challenged  = !$is_mine && !$is_expired && $row['already_challenged'];
-            ?>
-                <div class="match-card
-                    <?php echo $is_mine       ? 'my-match'   : ''; ?>
-                    <?php echo $is_expired    ? 'expired'    : ''; ?>
-                    <?php echo $is_challenged ? 'challenged' : ''; ?>
-                ">
-
-                    <?php if ($is_expired): ?>
-                        <span class="status-badge bg-danger text-white">EXPIRED</span>
-                    <?php elseif ($is_mine): ?>
-                        <span class="status-badge bg-success text-white">MY RESERVATION</span>
-                    <?php elseif ($is_challenged): ?>
-                        <span class="status-badge bg-primary text-white">MATCH REQUESTED</span>
-                    <?php else: ?>
-                        <span class="status-badge bg-primary text-white">CHALLENGEABLE</span>
-                    <?php endif; ?>
-
-                    <div class="text-center mb-2">
-                        <span class="type-badge"><?php echo strtoupper($row['game_type']); ?></span>
-                    </div>
-
-                    <div class="team-photo-container">
-                        <?php if (!empty($row['team_photo']) && file_exists("../uploads/" . $row['team_photo'])): ?>
-                            <img src="../uploads/<?php echo $row['team_photo']; ?>" class="w-100 h-100" style="object-fit:cover;">
-                        <?php else: ?>
-                            <i class="bi bi-shield-shaded fs-1 text-muted"></i>
-                        <?php endif; ?>
-                    </div>
-
-                    <h5 class="team-title"><?php echo strtoupper($row['team_name']); ?></h5>
-
-                    <div class="match-details">
-                        <div class="fw-bold <?php echo $is_expired ? 'text-danger' : 'text-dark'; ?> mb-1">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <?php echo date('M d, Y', strtotime($row['reservation_date'])); ?>
-                        </div>
-                        <div class="text-muted">
-                            <i class="bi bi-clock me-1"></i> <?php echo $row['selected_time']; ?>
-                        </div>
-                    </div>
-
-                    <div class="mt-auto">
-                        <?php if ($is_expired): ?>
-                            <button class="btn btn-secondary w-100 btn-challenge" disabled>VOID</button>
-
-                        <?php elseif ($is_mine): ?>
-                            <button class="btn btn-outline-success w-100 btn-challenge" disabled>MANAGE IN PROFILE</button>
-
-                        <?php elseif ($is_challenged): ?>
-                            <!-- Already sent a challenge to this reservation -->
-                            <button class="btn-match-found" disabled>
-                                <i class="bi bi-check-circle-fill"></i> MATCH FOUND
-                            </button>
-                            <p class="match-found-note">
-                                <i class="bi bi-hourglass-split me-1"></i>
-                                Awaiting opponent confirmation
-                            </p>
-
-                        <?php else: ?>
-                            <a href="send_challenge.php?res_id=<?php echo $row['id']; ?>&challenger_id=<?php echo $my_team_id; ?>"
-                               class="btn btn-warning w-100 btn-challenge">
-                                <i class="bi bi-lightning-fill"></i> CHALLENGE NOW
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="text-center w-100 py-5 bg-white rounded-4 border">
-                <i class="bi bi-search" style="font-size: 3rem; opacity: 0.2;"></i>
-                <h4 class="mt-3 text-muted">No Court Reservations Found</h4>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <div class="d-flex justify-content-center gap-3 mt-4">
-        <a href="../userManagement/profile.php?sid=<?php echo $current_user; ?>" class="btn btn-dark px-4 py-2 fw-bold">MY PROFILE</a>
-        <a href="../challenges&scheduling/selectdatetime.php" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">NEW RESERVATION</a>
+    <div class="d-flex align-items-center gap-3">
+        <div class="text-end">
+            <small style="color:rgba(255,255,255,0.45); font-size:0.62rem; display:block; text-transform:uppercase; letter-spacing:1px;">Challenging as</small>
+            <span class="badge bg-warning text-dark px-3 py-2 fw-bold" style="font-size:0.78rem; letter-spacing:0.5px;">
+                <?php echo strtoupper($team_name); ?>
+            </span>
+        </div>
+        <a href="javascript:history.back()" class="back-btn-top">← BACK</a>
     </div>
 </div>
+
+<div class="main-content">
+
+<?php if (empty($open_challengeable) && empty($match_requested) && empty($my_reservations) && empty($expired)): ?>
+    <div class="empty-state">
+        <i class="bi bi-search" style="font-size:3.5rem; opacity:0.2;"></i>
+        <h4 class="mt-3 mb-1">No reservations found</h4>
+        <p class="small">Be the first — create a new reservation below.</p>
+    </div>
+
+<?php else: ?>
+
+    <!-- ① OPEN TO CHALLENGE -->
+    <?php if (!empty($open_challengeable)): ?>
+    <div class="section-label">
+        <span class="label-pill" style="background:#1D4ED8; color:#fff;">⚡ Open to challenge</span>
+        <div class="label-line"></div>
+        <span class="label-count"><?php echo count($open_challengeable); ?> available</span>
+    </div>
+    <div class="match-grid">
+        <?php foreach ($open_challengeable as $row):
+            renderCard($row, false, false, false, $my_team_id);
+        endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- ② MATCH REQUESTED (already challenged by me) -->
+    <?php if (!empty($match_requested)): ?>
+    <div class="section-label">
+        <span class="label-pill" style="background:#DBEAFE; color:#1E40AF;">✓ Match requested</span>
+        <div class="label-line"></div>
+        <span class="label-count"><?php echo count($match_requested); ?> pending</span>
+    </div>
+    <div class="match-grid">
+        <?php foreach ($match_requested as $row):
+            renderCard($row, false, false, true, $my_team_id);
+        endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- ③ MY RESERVATIONS -->
+    <?php if (!empty($my_reservations)): ?>
+    <div class="section-label">
+        <span class="label-pill" style="background:#D1FAE5; color:#065F46;">🛡 My reservations</span>
+        <div class="label-line"></div>
+        <span class="label-count"><?php echo count($my_reservations); ?></span>
+    </div>
+    <div class="match-grid">
+        <?php foreach ($my_reservations as $row):
+            renderCard($row, true, false, false, $my_team_id);
+        endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- ④ EXPIRED -->
+    <?php if (!empty($expired)): ?>
+    <div class="section-label">
+        <span class="label-pill" style="background:#FEE2E2; color:#991B1B;">✕ Expired</span>
+        <div class="label-line"></div>
+        <span class="label-count"><?php echo count($expired); ?></span>
+    </div>
+    <div class="match-grid">
+        <?php foreach ($expired as $row):
+            renderCard($row, ($row['team_owner'] === $current_user), true, false, $my_team_id);
+        endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+<?php endif; ?>
+
+</div><!-- /main-content -->
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+    <a href="../userManagement/profile.php?sid=<?php echo $current_user; ?>" class="btn btn-dark px-4 py-2 fw-bold">
+        <i class="bi bi-person-fill me-1"></i> MY PROFILE
+    </a>
+    <a href="../challenges&scheduling/selectdatetime.php" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">
+        <i class="bi bi-calendar-plus me-1"></i> NEW RESERVATION
+    </a>
+</div>
+
 </body>
 </html>
