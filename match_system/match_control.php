@@ -654,7 +654,7 @@ $away_id   = $match['away_id'];
     </div>
 
     <!-- FINISH -->
-    <form action="save_result.php" method="POST" id="finishForm"
+    <form action="../save_result.php" method="POST" id="finishForm"
           onsubmit="prepareSubmit(event)">
         <input type="hidden" name="match_id" value="<?php echo $match_id; ?>">
         <input type="hidden" name="h_score"  id="h_val" value="0">
