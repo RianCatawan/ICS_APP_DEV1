@@ -193,7 +193,7 @@ while($m = $status_results->fetch_assoc()) {
                                 <p class="small text-muted mb-3"><?= $team['game_type']; ?> Squad</p>
                                 
                                 <div class="btn-action-group">
-                                    <a href="challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
+                                    <a href="../challenges&scheduling/selectdatetime.php?team_id=<?= $team['id']; ?>" class="btn-book">
                                         <i class="bi bi-calendar-plus me-1"></i> BOOK
                                     </a>
                                     
