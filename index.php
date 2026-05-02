@@ -1,7 +1,20 @@
 <?php
 session_start();
-// Use require_once for stability
 require_once(__DIR__ . '/database_config/db.php');
+
+// ===== ADMIN REDIRECT GUARD =====
+// If logged in as admin, redirect to admin dashboard — they don't belong here
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
+    exit();
+}
+
+// ===== NOT LOGGED IN GUARD (optional but recommended) =====
+// Uncomment below if you want to force login before viewing this page
+// if (empty($_SESSION['username'])) {
+//     header("Location: /ICS_APP_DEV1/authentication/login.php");
+//     exit();
+// }
 
 $current_user = $_SESSION['username'] ?? '';
 $base = "";
@@ -88,15 +101,10 @@ if ($user_info['active_team_id'] > 0) {
 // ===== ALL TEAMS =====
 $all_teams = $conn->query("SELECT * FROM teams ORDER BY id DESC");
 
-// ===== IMAGE HELPER FIXED =====
+// ===== IMAGE HELPER =====
 function getImage($file) {
     if (empty($file)) return "https://via.placeholder.com/150?text=No+Photo";
-    
-    // Logic: Web browsers cannot read absolute system paths like C:/xampp...
-    // They need relative URL paths. 
-    $url_path = "uploads/" . $file; 
-    
-    // Return the relative URL for the <img> tag
+    $url_path = "uploads/" . $file;
     return $url_path;
 }
 ?>
@@ -363,7 +371,7 @@ a:hover { color: var(--amber); }
             <span class="text-white fw-bold">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($current_user); ?>
             </span>
-            <a href="index.php" class="login-btn-top">Back to Profile</a>
+            <a href="/userManagement/profile.php" class="login-btn-top">Back to Profile</a>
         <?php else: ?>
             <a href="authentication/login.php" class="login-btn-top">Login</a>
         <?php endif; ?>
@@ -452,7 +460,6 @@ a:hover { color: var(--amber); }
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-// Fix broken images on the fly if the file doesn't exist in the folder
 document.querySelectorAll('img').forEach(img => {
     img.onerror = function() {
         this.src = "https://via.placeholder.com/150?text=No+Photo";
