@@ -24,7 +24,7 @@ if (!$match) { die("Match not found."); }
 // 2. Handle Actions
 if ($action === 'decline') {
     $conn->query("UPDATE match_requests SET status = 'rejected' WHERE id = $request_id");
-    header("Location: /basketball/userManagement/profile.php");
+    header("Location: ../userManagement/profile.php");
 } elseif ($action === 'accept') {
     if ($current_user === $match['home_owner']) {
         $conn->query("UPDATE match_requests SET home_approved = 1 WHERE id = $request_id");
@@ -33,6 +33,6 @@ if ($action === 'decline') {
         $conn->query("UPDATE match_requests SET challenger_approved = 1 WHERE id = $request_id");
     }
     // Redirect to your VS Arena page
-    header("Location: /basketball/challenges&scheduling/confirmation_match.php?id=$request_id");
+    header("Location: ../challenges&scheduling/confirmation_match.php?id=$request_id");
 }
 exit();
