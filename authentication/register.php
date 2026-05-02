@@ -44,7 +44,7 @@ if (isset($_POST['submit_reg'])) {
         // Check FileZilla: folder must be 'userManagement' (lowercase 'u')
         echo "<script>
                 alert('Registration successful!');
-                window.location.href='..ICS_APP_DEV1/userManagement/profile.php';
+                window.location.href='../ICS_APP_DEV1/userManagement/profile.php';
               </script>";
         exit();
 
