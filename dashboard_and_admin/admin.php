@@ -120,14 +120,27 @@ $pending_reqs = $conn->query("SELECT COUNT(*) as total FROM match_requests WHERE
         <h4 class="fw-bold mb-0 mt-2">NBSC ADMIN</h4>
         <small class="opacity-50">Basketball Control Center</small>
     </div>
-    <nav class="nav flex-column mt-4">
-        <a class="nav-link active" href="#"><i class="bi bi-speedometer2 me-2"></i> Overview</a>
-        <a class="nav-link" href="/basketball/userManagement/view_teams.php"><i class="bi bi-people me-2"></i> Teams</a>
-        <a class="nav-link" href="/basketball/match_system/matches.php"><i class="bi bi-trophy me-2"></i> Matches</a>
-        <a class="nav-link" href="/basketball/userManagement/manage_users.php"><i class="bi bi-person-gear me-2"></i> User Settings</a>
-        <hr class="mx-3 opacity-25">
-        <a class="nav-link text-danger" href="/basketball/authentication/logout.php"><i class="bi bi-box-arrow-left me-2"></i> Sign Out</a>
-    </nav>
+   <nav class="nav flex-column mt-4">
+    <a class="nav-link active" href="/ICS_APP_DEV1/dashboard_and_admin/admin.php">
+        <i class="bi bi-speedometer2 me-2"></i> Overview
+    </a>
+    <a class="nav-link" href="/ICS_APP_DEV1/userManagement/view_teams.php">
+        <i class="bi bi-people me-2"></i> Teams
+    </a>
+    <a class="nav-link" href="/ICS_APP_DEV1/match_system/matches.php">
+        <i class="bi bi-trophy me-2"></i> Matches
+    </a>
+    <a class="nav-link" href="/ICS_APP_DEV1/userManagement/manage_users.php">
+        <i class="bi bi-person-gear me-2"></i> User Settings
+    </a>
+    <hr class="mx-3 opacity-25">
+    <a class="nav-link" href="/ICS_APP_DEV1/index.php">
+        <i class="bi bi-house me-2"></i> View Homepage
+    </a>
+    <a class="nav-link text-danger" href="/ICS_APP_DEV1/authentication/logout.php">
+        <i class="bi bi-box-arrow-left me-2"></i> Sign Out
+    </a>
+</nav>
 </div>
 
 <div id="content">
@@ -137,7 +150,7 @@ $pending_reqs = $conn->query("SELECT COUNT(*) as total FROM match_requests WHERE
             <p class="text-muted">Hello, <strong><?php echo $_SESSION['username']; ?></strong>. Here is the court activity.</p>
         </div>
         
-        <a href="/basketball/dashboard_and_admin/dashboardmanager.php" class="manager-link-btn text-decoration-none">
+        <a href="/ICS_APP_DEV1/dashboard_and_admin/dashboardmanager.php" class="manager-link-btn text-decoration-none">
             <i class="bi bi-cpu-fill me-2"></i> Admin Task Manager
         </a>
     </div>
@@ -187,12 +200,12 @@ $pending_reqs = $conn->query("SELECT COUNT(*) as total FROM match_requests WHERE
                 <h5 class="fw-bold mb-4">Quick Operations</h5>
                 <div class="row g-3">
                     <div class="col-6">
-                        <a href="/basketball/userManagement/add_team.php" class="btn btn-outline-primary w-100 py-3 rounded-4 quick-btn text-decoration-none">
+                        <a href="/ICS_APP_DEV1/userManagement/add_team.php" class="btn btn-outline-primary w-100 py-3 rounded-4 quick-btn text-decoration-none">
                             <i class="bi bi-plus-circle d-block mb-2 fs-4"></i> Create New Team
                         </a>
                     </div>
                     <div class="col-6">
-                        <a href="/basketball/userManagement/schedule.php" class="btn btn-outline-success w-100 py-3 rounded-4 quick-btn text-decoration-none">
+                        <a href="/ICS_APP_DEV1/userManagement/schedule.php" class="btn btn-outline-success w-100 py-3 rounded-4 quick-btn text-decoration-none">
                             <i class="bi bi-calendar-check d-block mb-2 fs-4"></i> Manage Schedule
                         </a>
                     </div>

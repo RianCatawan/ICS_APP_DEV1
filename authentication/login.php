@@ -12,7 +12,7 @@ if(isset($_POST['login'])){
         $_SESSION['username'] = 'admin';
         $_SESSION['role'] = 'admin'; 
         // FIX: Added /basketball/ prefix
-        header("Location: /basketball/dashboard_and_admin/admin.php");
+        header("Location: /ICS_APP_DEV1/dashboard_and_admin/admin.php");
         exit();
     }
 
@@ -38,7 +38,7 @@ if(isset($_POST['login'])){
             }
 
             // FIX: Added /basketball/ prefix and ensured path is correct
-            header("Location: /basketball/userManagement/profile.php");
+            header("Location: /ICS_APP_DEV1/userManagement/profile.php");
             exit();
         } else {
             $error = "Invalid password. Please try again.";
@@ -247,12 +247,12 @@ if(isset($_POST['login'])){
 <body>
 
 <nav class="navbar">
-    <a class="navbar-brand" href="/index.php">
+    <a class="navbar-brand" href="index.php">
         <i class="bi bi-dribbble"></i> NBSC MATCH MAKER
     </a>
     <div class="d-flex gap-2 align-items-center">
-        <a href="/basketball/index.php" class="btn-outline-custom">BACK TO HOME</a>
-        <a href="/basketball/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
+        <a href="/ICS_APP_DEV1/index.php" class="btn-outline-custom">BACK TO HOME</a>
+        <a href="/ICS_APP_DEV1/authentication/register.php" class="btn btn-sm btn-light fw-bold rounded-pill px-3">REGISTER</a>
     </div>
 </nav>
 
@@ -284,7 +284,7 @@ if(isset($_POST['login'])){
 
         <div class="divider">OR</div>
 
-        <a href="/basketball/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
+        <a href="/ICS_APP_DEV1/authentication/register.php" class="btn btn-outline-dark w-100 rounded-pill fw-bold btn-sm py-2">
             CREATE PLAYER ACCOUNT
         </a>
     </div>
