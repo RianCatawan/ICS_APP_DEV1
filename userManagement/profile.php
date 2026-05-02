@@ -140,10 +140,10 @@ while($m = $status_results->fetch_assoc()) {
                         
                         <?php if($needs_my_approval): ?>
                            <div class="d-flex gap-1">
-    <a href="challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=accept" 
+    <a href="../challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=accept" 
        class="btn btn-success btn-sm fw-bold py-0" style="font-size: 0.65rem;">ACCEPT</a>
     
-    <a href="challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=decline" 
+    <a href="../challenges&scheduling/accept_match.php?id=<?= $pm['id']; ?>&action=decline" 
        class="btn btn-danger btn-sm fw-bold py-0" style="font-size: 0.65rem;">DECLINE</a>
 </div>
                         <?php else: ?>
@@ -165,7 +165,7 @@ while($m = $status_results->fetch_assoc()) {
         </div>
 
         <div class="col-lg-8">
-            <a href="match_system/upcoming_reservation.php" class="upcoming-highlight-card">
+            <a href="../match_system/upcoming_reservation.php" class="upcoming-highlight-card">
                 <div class="d-flex align-items-center gap-3">
                     <i class="bi bi-calendar-check-fill fs-2" style="color: var(--brand-accent);"></i>
                     <div>
@@ -178,7 +178,7 @@ while($m = $status_results->fetch_assoc()) {
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-800 m-0">YOUR MANAGED TEAMS</h4>
-                <a href="Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
+                <a href="../Teams&history1/createteam.php" class="btn btn-warning btn-sm fw-bold shadow-sm rounded-pill px-3">NEW TEAM</a>
             </div>
 
             <div class="row g-3">
@@ -197,7 +197,7 @@ while($m = $status_results->fetch_assoc()) {
                                         <i class="bi bi-calendar-plus me-1"></i> BOOK
                                     </a>
                                     
-                               <a href="challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
+                               <a href="../challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
     <i class="bi bi-search me-1"></i> FIND MATCH
 </a>
 
