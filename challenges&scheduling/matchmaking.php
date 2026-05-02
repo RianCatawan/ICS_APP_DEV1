@@ -204,6 +204,25 @@ function renderCard($row, $is_mine, $is_expired, $is_challenged, $my_team_id) {
 
         .back-btn-top:hover { background: rgba(255,255,255,0.2); color: white; }
 
+        .header-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            border: 2px solid transparent;
+            color: white;
+            text-transform: uppercase;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .header-action-btn:hover { filter: brightness(1.15); color: white; }
+
         /* ── MAIN CONTENT AREA ── */
         .main-content {
             flex-grow: 1;
@@ -385,17 +404,6 @@ function renderCard($row, $is_mine, $is_expired, $is_challenged, $my_team_id) {
             padding: 80px 20px;
             color: #94A3B8;
         }
-
-        /* ── BOTTOM BAR ── */
-        .bottom-bar {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            padding: 28px 24px;
-            border-top: 1px solid #E2E8F0;
-            background: #fff;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -415,6 +423,14 @@ function renderCard($row, $is_mine, $is_expired, $is_challenged, $my_team_id) {
                 <?php echo strtoupper($team_name); ?>
             </span>
         </div>
+        <a href="../userManagement/profile.php?sid=<?php echo $current_user; ?>"
+           class="header-action-btn" style="background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25);">
+            <i class="bi bi-person-fill"></i> MY PROFILE
+        </a>
+        <a href="../challenges&scheduling/selectdatetime.php"
+           class="header-action-btn" style="background:var(--brand-accent); color:var(--brand-primary); border-color:var(--brand-accent);">
+            <i class="bi bi-calendar-plus"></i> NEW RESERVATION
+        </a>
         <a href="javascript:history.back()" class="back-btn-top">← BACK</a>
     </div>
 </div>
@@ -490,15 +506,7 @@ function renderCard($row, $is_mine, $is_expired, $is_challenged, $my_team_id) {
 
 </div><!-- /main-content -->
 
-<!-- BOTTOM BAR -->
-<div class="bottom-bar">
-    <a href="../userManagement/profile.php?sid=<?php echo $current_user; ?>" class="btn btn-dark px-4 py-2 fw-bold">
-        <i class="bi bi-person-fill me-1"></i> MY PROFILE
-    </a>
-    <a href="../challenges&scheduling/selectdatetime.php" class="btn btn-warning px-4 py-2 fw-bold shadow-sm">
-        <i class="bi bi-calendar-plus me-1"></i> NEW RESERVATION
-    </a>
-</div>
+
 
 </body>
 </html>
