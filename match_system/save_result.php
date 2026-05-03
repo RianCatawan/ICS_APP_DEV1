@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($stmt->execute()) {
         // Redirect to Battle History
-        header("Location: ../Teams&history1/battle_history.php");
+        header("Location: ../Teams&history1/battle_history1.php");
     } else {
         echo "Error: " . $conn->error;
     }
