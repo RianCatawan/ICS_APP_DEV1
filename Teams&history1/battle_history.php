@@ -142,7 +142,7 @@ $result = $conn->query($query);
             <small class="fw-bold text-uppercase" style="color: var(--brand-accent);">Competition Records</small>
             <h1 class="m-0 fw-800">BATTLE HISTORY</h1>
         </div>
-        <a href="/basketball/userManagement/profile.php" class="btn btn-back">
+        <a href="../userManagement/profile.php" class="btn btn-back">
             <i class="bi bi-arrow-left me-2"></i>BACK
         </a>
     </div>
