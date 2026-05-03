@@ -318,208 +318,69 @@ elseif ($total_games > 0) $grade = 'D';
     <!-- ══════════════════════════════════════════════════ -->
     <!--               ANALYTICS SECTION                   -->
     <!-- ══════════════════════════════════════════════════ -->
-    <div class="analytics-wrap">
-        <div class="analytics-title"><i class="bi bi-bar-chart-fill me-2"></i>Performance Analytics</div>
+  <!-- SIMPLE ANALYTICS -->
+<div style="margin-top: 24px; background: white; border: 3px solid #0A192F; border-radius: 16px; padding: 20px;">
+    <h6 style="font-family:'Outfit',sans-serif; font-weight:900; font-size:.7rem; text-transform:uppercase; letter-spacing:2px; color:#64748b; margin-bottom:16px;">
+        <i class="bi bi-bar-chart-fill me-1"></i> Performance
+    </h6>
 
-        <?php if ($total_games === 0): ?>
-            <div class="text-center py-5" style="background:white;border:var(--border-bold);border-radius:16px;">
-                <i class="bi bi-trophy display-3 text-muted"></i>
-                <h5 class="mt-3 fw-bold">No Match Data Yet</h5>
-                <p class="text-muted">Complete some confirmed matches to see your performance stats here.</p>
-            </div>
-        <?php else: ?>
+    <?php if ($total_games === 0): ?>
+        <p class="text-muted small mb-0">No match data yet.</p>
 
-        <!-- ROW 1: Grade + KPIs + Streak -->
-        <div class="row g-3 mb-3">
+    <?php else: ?>
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; text-align:center;">
 
-            <!-- Performance Grade -->
-            <div class="col-6 col-md-2">
-                <div class="grade-box h-100 d-flex flex-col align-items-center justify-content-center" style="display:flex;flex-direction:column;">
-                    <div class="grade-label mb-1">Grade</div>
-                    <div class="grade-letter"><?= $grade; ?></div>
-                    <div class="grade-label mt-1"><?= $win_pct; ?>% WR</div>
-                </div>
+            <div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:900; font-size:1.6rem; color:#0A192F;"><?= $total_games; ?></div>
+                <div style="font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8;">Games</div>
             </div>
 
-            <!-- KPI chips -->
-            <div class="col-6 col-md-2">
-                <div class="stat-chip h-100">
-                    <div class="num" style="color:var(--brand-primary);"><?= $total_games; ?></div>
-                    <div class="lbl">Games</div>
-                </div>
+            <div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:900; font-size:1.6rem; color:#16a34a;"><?= $wins; ?></div>
+                <div style="font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8;">Wins</div>
             </div>
-            <div class="col-6 col-md-2">
-                <div class="stat-chip h-100">
-                    <div class="num" style="color:var(--success);"><?= $wins; ?></div>
-                    <div class="lbl">Wins</div>
-                </div>
+
+            <div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:900; font-size:1.6rem; color:#dc2626;"><?= $losses; ?></div>
+                <div style="font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8;">Losses</div>
             </div>
-            <div class="col-6 col-md-2">
-                <div class="stat-chip h-100">
-                    <div class="num" style="color:var(--danger);"><?= $losses; ?></div>
-                    <div class="lbl">Losses</div>
-                </div>
+
+            <div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:900; font-size:1.6rem; color:#d97706;"><?= $draws; ?></div>
+                <div style="font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8;">Draws</div>
             </div>
-            <div class="col-6 col-md-2">
-                <div class="stat-chip h-100">
-                    <div class="num" style="color:var(--warn);"><?= $draws; ?></div>
-                    <div class="lbl">Draws</div>
-                </div>
+
+            <div>
+                <div style="font-family:'Outfit',sans-serif; font-weight:900; font-size:1.6rem; color:#0A192F;"><?= $win_pct; ?>%</div>
+                <div style="font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#94a3b8;">Win Rate</div>
             </div>
-            <div class="col-6 col-md-2">
-                <div class="stat-chip h-100">
-                    <div class="num" style="color:<?= $pt_diff >= 0 ? 'var(--success)' : 'var(--danger)'; ?>;">
-                        <?= ($pt_diff >= 0 ? '+' : '') . $pt_diff; ?>
-                    </div>
-                    <div class="lbl">Pt Diff</div>
-                </div>
-            </div>
+
         </div>
 
-        <!-- ROW 2: Win Rate bar + Insight tiles -->
-        <div class="row g-3 mb-3">
-            <div class="col-md-5">
-                <div class="chart-panel h-100">
-                    <div class="chart-panel-title">Win Rate</div>
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="fw-bold" style="font-family:Outfit;font-size:1.6rem;"><?= $win_pct; ?>%</span>
-                        <div class="text-end small text-muted"><?= $wins; ?>W / <?= $draws; ?>D / <?= $losses; ?>L</div>
-                    </div>
-                    <div class="win-bar-wrap mb-4">
-                        <div class="win-bar-fill" id="winBar" style="width:0%"></div>
-                    </div>
-
-                    <div class="chart-panel-title mt-2">Current Streak</div>
-                    <div>
-                        <?php if ($streak > 0): ?>
-                        <span class="streak-pill <?= $streak_type; ?>">
-                            <i class="bi bi-<?= $streak_type === 'W' ? 'fire' : ($streak_type === 'L' ? 'graph-down-arrow' : 'dash-circle'); ?>"></i>
-                            <?= $streak; ?> <?= $streak_type === 'W' ? 'Win' : ($streak_type === 'L' ? 'Loss' : 'Draw'); ?><?= $streak > 1 ? ' Streak' : ''; ?>
-                        </span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="row g-2 mt-3">
-                        <div class="col-6">
-                            <div class="insight-card text-center">
-                                <div class="i-icon">🏀</div>
-                                <div class="i-title">Avg Scored</div>
-                                <div class="i-val"><?= $avg_pf; ?></div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="insight-card text-center">
-                                <div class="i-icon">🛡️</div>
-                                <div class="i-title">Avg Conceded</div>
-                                <div class="i-val" style="color:var(--danger);"><?= $avg_pa; ?></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Doughnut -->
-            <div class="col-md-3">
-                <div class="chart-panel h-100">
-                    <div class="chart-panel-title">Result Split</div>
-                    <canvas id="doughnut" height="170"></canvas>
-                </div>
-            </div>
-
-            <!-- Recent 5 results -->
-            <div class="col-md-4">
-                <div class="chart-panel h-100">
-                    <div class="chart-panel-title">Recent Results</div>
-                    <?php foreach (array_slice(array_reverse($all_confirmed), 0, 5) as $e):
-                        $r = ($e['winner_id'] == 0) ? 'D' : (($e['winner_id'] == $e['my_id']) ? 'W' : 'L');
-                    ?>
-                    <div class="recent-result-row">
-                        <div>
-                            <div class="fw-bold" style="font-size:.82rem;">vs <?= htmlspecialchars($e['opp']); ?></div>
-                            <div class="text-muted" style="font-size:.7rem;"><?= date('M d, Y', strtotime($e['date'])); ?></div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="fw-800" style="font-family:Outfit;"><?= $e['my_score']; ?>–<?= $e['op_score']; ?></span>
-                            <span class="res-badge <?= $r; ?>"><?= $r; ?></span>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
+        <!-- thin win rate bar -->
+        <div style="background:#e2e8f0; border-radius:99px; height:6px; overflow:hidden; margin-top:16px;">
+            <div id="simpleWrBar" style="height:100%; border-radius:99px; background:linear-gradient(90deg,#FFB800,#16a34a); width:0%; transition:width 1.2s ease;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px;">
+            <span style="font-size:.6rem; color:#94a3b8;"><?= $wins; ?>W / <?= $draws; ?>D / <?= $losses; ?>L</span>
+            <?php if ($streak > 0): ?>
+            <span style="font-size:.6rem; font-weight:700; color:<?= $streak_type==='W'?'#16a34a':($streak_type==='L'?'#dc2626':'#d97706'); ?>;">
+                <?= $streak; ?> <?= $streak_type==='W'?'Win':($streak_type==='L'?'Loss':'Draw'); ?> Streak
+            </span>
+            <?php endif; ?>
         </div>
 
-        <!-- ROW 3: Monthly bar + Points line -->
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="chart-panel">
-                    <div class="chart-panel-title">Monthly Wins vs Losses</div>
-                    <canvas id="monthlyBar" height="160"></canvas>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-panel">
-                    <div class="chart-panel-title">Points For vs Against (per game)</div>
-                    <canvas id="pointsLine" height="160"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <?php endif; ?>
-    </div><!-- /analytics-wrap -->
-</div><!-- /container -->
+    <?php endif; ?>
+</div>
 
 <script>
-// Animate win bar
 setTimeout(() => {
-    const bar = document.getElementById('winBar');
-    if (bar) bar.style.width = '<?= $win_pct; ?>%';
-}, 200);
+    const b = document.getElementById('simpleWrBar');
+    if (b) b.style.width = '<?= $win_pct; ?>%';
+}, 300);
+</script>
 
-<?php if ($total_games > 0): ?>
 
-// Doughnut
-new Chart(document.getElementById('doughnut'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Wins','Draws','Losses'],
-        datasets: [{ data: [<?= $wins; ?>,<?= $draws; ?>,<?= $losses; ?>], backgroundColor: ['#16a34a','#d97706','#dc2626'], borderWidth: 0 }]
-    },
-    options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
-});
-
-// Monthly bar
-const months = <?= json_encode(array_keys($monthly)); ?>;
-const mW = <?= json_encode(array_column($monthly, 'w')); ?>;
-const mL = <?= json_encode(array_column($monthly, 'l')); ?>;
-new Chart(document.getElementById('monthlyBar'), {
-    type: 'bar',
-    data: {
-        labels: months,
-        datasets: [
-            { label: 'Wins',   data: mW, backgroundColor: '#16a34a', borderRadius: 6 },
-            { label: 'Losses', data: mL, backgroundColor: '#dc2626', borderRadius: 6 }
-        ]
-    },
-    options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-});
-
-// Points line
-const gLabels = <?= json_encode(array_map(fn($e) => date('M d', strtotime($e['date'])), $all_confirmed)); ?>;
-const pfData  = <?= json_encode(array_column($all_confirmed, 'my_score')); ?>;
-const paData  = <?= json_encode(array_column($all_confirmed, 'op_score')); ?>;
-new Chart(document.getElementById('pointsLine'), {
-    type: 'line',
-    data: {
-        labels: gLabels,
-        datasets: [
-            { label: 'Points For',     data: pfData, borderColor: '#FFB800', backgroundColor: 'rgba(255,184,0,0.1)', tension: 0.4, fill: true, pointBackgroundColor: '#FFB800', pointRadius: 4 },
-            { label: 'Points Against', data: paData, borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.07)', tension: 0.4, fill: true, pointBackgroundColor: '#dc2626', pointRadius: 4 }
-        ]
-    },
-    options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
-});
-
-<?php endif; ?>
 </script>
 </body>
 </html>
