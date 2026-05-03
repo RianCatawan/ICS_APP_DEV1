@@ -301,7 +301,7 @@ elseif ($total_games > 0) $grade = 'D';
                                 <a href="../challenges&scheduling/matchmaking.php?team_id=<?= $team['id']; ?>" class="btn-find">
                                     <i class="bi bi-search me-1"></i> FIND MATCH
                                 </a>
-                                <a href="../Teams%26history1/team_overall_history.php?team_id=<?= $team['id']; ?>" class="btn-history">
+                                <a href="../Teams&history1/team_overall_history.php?team_id=<?= $team['id']; ?>" class="btn-history">
                                     <i class="bi bi-bar-chart-fill me-1"></i> HISTORY
                                 </a>
                             </div>
