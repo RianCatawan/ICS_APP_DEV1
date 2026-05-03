@@ -201,9 +201,7 @@ while($m = $status_results->fetch_assoc()) {
     <i class="bi bi-search me-1"></i> FIND MATCH
 </a>
 
-                                    <a href="../Teams&history1/editteam.php?id=<?= $team['id']; ?>" class="btn-edit-pill">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
+                                   
                                 </div>
                             </div>
                         </div>
