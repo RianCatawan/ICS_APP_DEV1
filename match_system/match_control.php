@@ -865,4 +865,4 @@ $away_id   = $match['away_id'];
     updateTimerDisplay();
 </script>
 </body>
-</html>
+</html> 
