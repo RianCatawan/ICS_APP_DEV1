@@ -249,15 +249,33 @@ elseif ($total_games > 0) $grade = 'D';
             </div>
 
             <div class="status-panel">
-                <h5 class="fw-800 text-uppercase small mb-3 text-muted">Confirmed Games</h5>
-                <?php foreach($done_matches as $dm): ?>
-                    <div class="match-item border-success bg-light">
-                        <span><?= htmlspecialchars($dm['home_n']); ?> vs <?= htmlspecialchars($dm['away_n']); ?></span>
-                        <span class="badge bg-success" style="font-size:.6rem;"><?= date('M d', strtotime($dm['reservation_date'])); ?></span>
-                    </div>
-                <?php endforeach; if(empty($done_matches)) echo "<p class='small text-muted'>No games confirmed.</p>"; ?>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-800 text-uppercase small mb-0 text-muted">Confirmed Games</h5>
+        <?php if(count($done_matches) > 0): ?>
+            <button class="btn btn-sm fw-bold" style="font-size:.65rem;border:2px solid #e2e8f0;border-radius:20px;padding:3px 12px;background:transparent;"
+                onclick="toggleConfirmed()" id="toggleBtn">
+                <i class="bi bi-chevron-down" id="toggleIcon"></i> SHOW
+            </button>
+        <?php endif; ?>
+    </div>
+
+    <div id="confirmedList" style="display:none;">
+        <?php $count = 0; foreach($done_matches as $dm): if($count >= 5) break; $count++; ?>
+            <div class="match-item border-success bg-light">
+                <span><?= htmlspecialchars($dm['home_n']); ?> vs <?= htmlspecialchars($dm['away_n']); ?></span>
+                <span class="badge bg-success" style="font-size:.6rem;"><?= date('M d', strtotime($dm['reservation_date'])); ?></span>
             </div>
-        </div>
+        <?php endforeach; ?>
+        <?php if(count($done_matches) > 5): ?>
+            <p class="text-muted small text-center mb-0">+<?= count($done_matches) - 5; ?> more games</p>
+        <?php endif; ?>
+        <?php if(empty($done_matches)) echo "<p class='small text-muted'>No games confirmed.</p>"; ?>
+    </div>
+
+    <?php if(empty($done_matches)): ?>
+        <p class='small text-muted'>No games confirmed.</p>
+    <?php endif; ?>
+</div>
 
         <!-- RIGHT PANEL -->
         <div class="col-lg-8">
@@ -510,6 +528,16 @@ new Chart(document.getElementById('pointsLine'), {
     },
     options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
 });
+function toggleConfirmed() {
+    const list = document.getElementById('confirmedList');
+    const icon = document.getElementById('toggleIcon');
+    const btn  = document.getElementById('toggleBtn');
+    const open = list.style.display === 'block';
+    list.style.display = open ? 'none' : 'block';
+    icon.className = open ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
+    btn.innerHTML  = (open ? '<i class="bi bi-chevron-down" id="toggleIcon"></i> SHOW' 
+                           : '<i class="bi bi-chevron-up"   id="toggleIcon"></i> HIDE');
+}
 
 <?php endif; ?>
 </script>
