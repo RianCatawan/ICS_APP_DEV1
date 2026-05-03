@@ -228,6 +228,7 @@ elseif ($total_games > 0) $grade = 'D';
 
     <div class="row g-4">
         <!-- LEFT PANEL -->
+        <!-- LEFT PANEL -->
         <div class="col-lg-4">
             <div class="status-panel">
                 <h5 class="fw-800 text-uppercase small mb-3 text-muted">Action Required</h5>
@@ -248,25 +249,24 @@ elseif ($total_games > 0) $grade = 'D';
                 <?php endforeach; if(empty($pending_matches)) echo "<p class='small text-muted'>No pending actions.</p>"; ?>
             </div>
 
-           <div class="status-panel">
-    <h5 class="fw-800 text-uppercase small mb-3 text-muted">Confirmed Games</h5>
-    <div style="max-height:220px; overflow-y:auto; padding-right:4px;">
-        <style>
-            #confirmedScroll::-webkit-scrollbar { width: 4px; }
-            #confirmedScroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-            #confirmedScroll::-webkit-scrollbar-thumb { background: #0A192F; border-radius: 10px; }
-        </style>
-        <div id="confirmedScroll" style="max-height:220px; overflow-y:auto; padding-right:4px;">
-            <?php foreach($done_matches as $dm): ?>
-                <div class="match-item border-success bg-light">
-                    <span><?= htmlspecialchars($dm['home_n']); ?> vs <?= htmlspecialchars($dm['away_n']); ?></span>
-                    <span class="badge bg-success" style="font-size:.6rem;"><?= date('M d', strtotime($dm['reservation_date'])); ?></span>
+            <div class="status-panel">
+                <h5 class="fw-800 text-uppercase small mb-3 text-muted">Confirmed Games</h5>
+                <style>
+                    #confirmedScroll::-webkit-scrollbar { width: 4px; }
+                    #confirmedScroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+                    #confirmedScroll::-webkit-scrollbar-thumb { background: #0A192F; border-radius: 10px; }
+                </style>
+                <div id="confirmedScroll" style="max-height:220px; overflow-y:auto; padding-right:4px;">
+                    <?php foreach($done_matches as $dm): ?>
+                        <div class="match-item border-success bg-light">
+                            <span><?= htmlspecialchars($dm['home_n']); ?> vs <?= htmlspecialchars($dm['away_n']); ?></span>
+                            <span class="badge bg-success" style="font-size:.6rem;"><?= date('M d', strtotime($dm['reservation_date'])); ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                    <?php if(empty($done_matches)) echo "<p class='small text-muted'>No games confirmed.</p>"; ?>
                 </div>
-            <?php endforeach; ?>
-            <?php if(empty($done_matches)) echo "<p class='small text-muted'>No games confirmed.</p>"; ?>
-        </div>
-    </div>
-</div>
+            </div>
+        </div><!-- END LEFT PANEL -->
         <!-- RIGHT PANEL -->
         <div class="col-lg-8">
             <a href="../match_system/upcoming_reservation.php" class="upcoming-highlight-card">
