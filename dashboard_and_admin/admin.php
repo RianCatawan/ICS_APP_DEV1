@@ -8,23 +8,25 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 // ── KPI STATS ──
-$total_players = $conn->query("SELECT COUNT(*) as c FROM users WHERE role='player'")->fetch_assoc()['c'] ?? 0;
-$total_teams   = $conn->query("SELECT COUNT(*) as c FROM teams")->fetch_assoc()['c'] ?? 0;
-$total_matches = $conn->query("SELECT COUNT(*) as c FROM match_requests")->fetch_assoc()['c'] ?? 0;
-$confirmed_matches = $conn->query("SELECT COUNT(*) as c FROM match_requests WHERE final_status='confirmed'")->fetch_assoc()['c'] ?? 0;
-$pending_reqs  = $conn->query("SELECT COUNT(*) as c FROM match_requests WHERE final_status='pending'")->fetch_assoc()['c'] ?? 0;
+$total_players      = $conn->query("SELECT COUNT(*) as c FROM users WHERE role='player'")->fetch_assoc()['c'] ?? 0;
+$total_teams        = $conn->query("SELECT COUNT(*) as c FROM teams")->fetch_assoc()['c'] ?? 0;
+$total_matches      = $conn->query("SELECT COUNT(*) as c FROM match_requests")->fetch_assoc()['c'] ?? 0;
+$confirmed_matches  = $conn->query("SELECT COUNT(*) as c FROM match_requests WHERE final_status='confirmed'")->fetch_assoc()['c'] ?? 0;
+$pending_reqs       = $conn->query("SELECT COUNT(*) as c FROM match_requests WHERE final_status='pending'")->fetch_assoc()['c'] ?? 0;
 $total_reservations = $conn->query("SELECT COUNT(*) as c FROM reservations")->fetch_assoc()['c'] ?? 0;
 
 // ── MONTHLY MATCH ACTIVITY (last 6 months) ──
-$monthly_data = [];
+$monthly_labels = [];
+$monthly_values = [];
 for ($i = 5; $i >= 0; $i--) {
     $month_start = date('Y-m-01', strtotime("-$i months"));
-    $month_end   = date('Y-m-t', strtotime("-$i months"));
-    $label       = date('M y', strtotime("-$i months"));
+    $month_end   = date('Y-m-t',  strtotime("-$i months"));
+    $label       = date('M y',    strtotime("-$i months"));
     $res = $conn->query("SELECT COUNT(*) as c FROM match_requests mr
         JOIN reservations r ON mr.reservation_id = r.id
         WHERE r.reservation_date BETWEEN '$month_start' AND '$month_end'");
-    $monthly_data[$label] = $res->fetch_assoc()['c'] ?? 0;
+    $monthly_labels[] = $label;
+    $monthly_values[] = (int)($res->fetch_assoc()['c'] ?? 0);
 }
 
 // ── WIN RATE BY TEAM (top 6) ──
@@ -77,19 +79,23 @@ $recent_players = $conn->query("
 ");
 
 // ── MATCH STATUS BREAKDOWN ──
-$status_res = $conn->query("SELECT final_status, COUNT(*) as c FROM match_requests GROUP BY final_status");
-$status_data = ['pending'=>0,'confirmed'=>0,'rejected'=>0];
+$status_res  = $conn->query("SELECT final_status, COUNT(*) as c FROM match_requests GROUP BY final_status");
+$status_data = ['pending' => 0, 'confirmed' => 0, 'rejected' => 0];
 if ($status_res) while ($row = $status_res->fetch_assoc()) $status_data[$row['final_status']] = $row['c'];
 
 // ── RESERVATIONS PER MONTH ──
-$res_monthly = [];
+$res_labels = [];
+$res_values = [];
 for ($i = 5; $i >= 0; $i--) {
     $ms = date('Y-m-01', strtotime("-$i months"));
     $me = date('Y-m-t',  strtotime("-$i months"));
     $lb = date('M y',    strtotime("-$i months"));
     $r  = $conn->query("SELECT COUNT(*) as c FROM reservations WHERE reservation_date BETWEEN '$ms' AND '$me'");
-    $res_monthly[$lb] = $r->fetch_assoc()['c'] ?? 0;
+    $res_labels[] = $lb;
+    $res_values[] = (int)($r->fetch_assoc()['c'] ?? 0);
 }
+
+$comp_rate = $total_matches > 0 ? round($confirmed_matches / $total_matches * 100) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -97,934 +103,778 @@ for ($i = 5; $i >= 0; $i--) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NBSC Admin — Command Center</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-    --ink:      #060D1A;
-    --ink-mid:  #0D1F38;
-    --ink-soft: #152844;
-    --gold:     #F5A800;
-    --gold-dim: #B87A00;
-    --teal:     #00C9A7;
-    --rose:     #FF4D6D;
-    --sky:      #38BDF8;
-    --text:     #E2EAF4;
-    --muted:    #5A7A9F;
-    --border:   rgba(255,255,255,0.07);
-    --sidebar:  240px;
-    --radius:   14px;
-}
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-    background: var(--ink);
+:root {
+    --navy:    #060D1A;
+    --navy2:   #0D1F38;
+    --navy3:   #152844;
+    --gold:    #F5A800;
+    --gold2:   #FBBF24;
+    --teal:    #00C9A7;
+    --rose:    #FF4D6D;
+    --sky:     #38BDF8;
+    --lime:    #84CC16;
+    --violet:  #A78BFA;
+    --text:    #E2EAF4;
+    --muted:   #5A7A9F;
+    --border:  rgba(255,255,255,0.07);
+    --sidebar: 220px;
+    --radius:  10px;
+}
+
+html, body {
+    height: 100%;
+    background: var(--navy);
     color: var(--text);
-    font-family: 'Manrope', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
     overflow-x: hidden;
 }
 
-/* ── SIDEBAR ── */
+/* ─── LAYOUT ─────────────────────────── */
+.shell { display: flex; min-height: 100vh; }
+
+/* ─── SIDEBAR ─────────────────────────── */
 #sidebar {
-    position: fixed;
-    top: 0; left: 0;
     width: var(--sidebar);
-    height: 100vh;
-    background: var(--ink-mid);
+    flex-shrink: 0;
+    background: var(--navy2);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
     z-index: 100;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
-.sidebar-logo {
-    padding: 28px 24px 20px;
+.sb-logo {
+    padding: 22px 18px 16px;
     border-bottom: 1px solid var(--border);
 }
-
-.logo-mark {
-    width: 42px; height: 42px;
+.sb-mark {
+    width: 38px; height: 38px;
     background: var(--gold);
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: var(--ink);
-    margin-bottom: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 15px;
+    color: var(--navy);
+    margin-bottom: 9px;
 }
-
-.logo-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
+.sb-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 14px;
     color: var(--text);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    text-transform: uppercase; letter-spacing: .05em;
 }
+.sb-sub { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
 
-.logo-sub {
-    font-size: 0.65rem;
+.sb-nav { padding: 10px 10px; flex: 1; }
+
+.sb-section {
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .11em;
     color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 2px;
-}
-
-.sidebar-nav { padding: 16px 12px; flex: 1; }
-
-.nav-section-label {
-    font-size: 0.58rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    padding: 14px 12px 6px;
+    padding: 12px 8px 4px;
 }
 
 .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 9px;
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px;
+    border-radius: 8px;
     color: var(--muted);
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.82rem;
-    transition: 0.18s;
+    font-weight: 600; font-size: 12px;
+    transition: .15s;
     margin-bottom: 2px;
 }
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.active { background: rgba(245,168,0,.12); color: var(--gold); }
+.nav-item .ni { font-size: 14px; width: 18px; text-align: center; }
 
-.nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-.nav-item.active { background: rgba(245,168,0,0.12); color: var(--gold); }
-.nav-item.active .nav-icon { color: var(--gold); }
-.nav-item .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
-
-.sidebar-footer {
-    padding: 16px 12px;
+.sb-foot {
+    padding: 12px 10px;
     border-top: 1px solid var(--border);
 }
-
 .admin-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 9px;
-}
-
-.admin-avatar {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--gold), var(--teal));
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,.04);
     border-radius: 8px;
+}
+.admin-av {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--gold), var(--teal));
+    border-radius: 7px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800;
-    font-size: 0.75rem;
-    color: var(--ink);
+    font-weight: 900; font-size: 11px; color: var(--navy);
     flex-shrink: 0;
 }
 
-/* ── MAIN CONTENT ── */
+/* ─── MAIN ─────────────────────────── */
 #main {
     margin-left: var(--sidebar);
-    min-height: 100vh;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
-/* ── TOP BAR ── */
+/* ─── TOPBAR ─────────────────────────── */
 .topbar {
-    padding: 18px 32px;
+    padding: 14px 24px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--ink-mid);
-    position: sticky;
-    top: 0;
-    z-index: 50;
+    background: var(--navy2);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
 }
-
 .page-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.2rem;
-    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 17px;
+    color: var(--text); letter-spacing: .03em;
 }
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+.tb-date { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.tb-right { display: flex; align-items: center; gap: 10px; }
 
 .live-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--teal);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700;
+    color: var(--teal); text-transform: uppercase; letter-spacing: .08em;
 }
-
 .live-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--teal);
     animation: pulse 1.5s infinite;
 }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-.topbar-btn {
-    background: rgba(255,255,255,0.06);
+.tb-btn {
+    background: rgba(255,255,255,.06);
     border: 1px solid var(--border);
     color: var(--text);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-decoration: none;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    transition: 0.2s;
+    border-radius: 7px; padding: 6px 12px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+    transition: .2s; cursor: pointer;
 }
+.tb-btn:hover { background: rgba(255,255,255,.1); color: var(--gold); }
+.tb-btn.gold { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+.tb-btn.gold:hover { background: var(--gold2); color: var(--navy); }
 
-.topbar-btn:hover { background: rgba(255,255,255,0.1); color: var(--gold); }
-.topbar-btn.gold { background: var(--gold); color: var(--ink); border-color: var(--gold); }
-.topbar-btn.gold:hover { background: #e09800; color: var(--ink); }
+/* ─── CONTENT ─────────────────────────── */
+.content { padding: 20px 24px 40px; flex: 1; }
 
-/* ── CONTENT BODY ── */
-.content-body { padding: 28px 32px; flex: 1; }
-
-/* ── KPI CARDS ── */
+/* ─── KPI GRID ─────────────────────────── */
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 14px;
-    margin-bottom: 24px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
-
-.kpi-card {
-    background: var(--ink-mid);
+.kpi {
+    background: var(--navy2);
     border: 1px solid var(--border);
+    border-top: 3px solid transparent;
     border-radius: var(--radius);
-    padding: 20px 16px;
-    position: relative;
-    overflow: hidden;
-    transition: 0.2s;
+    padding: 16px 14px;
+    transition: .2s;
+    animation: fadeUp .5s ease both;
 }
+.kpi:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.12); }
+.kpi:nth-child(1){animation-delay:.05s} .kpi:nth-child(2){animation-delay:.10s}
+.kpi:nth-child(3){animation-delay:.15s} .kpi:nth-child(4){animation-delay:.20s}
+.kpi:nth-child(5){animation-delay:.25s} .kpi:nth-child(6){animation-delay:.30s}
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-.kpi-card:hover { border-color: rgba(255,255,255,0.14); transform: translateY(-2px); }
+.kpi.gold  { border-top-color: var(--gold); }
+.kpi.teal  { border-top-color: var(--teal); }
+.kpi.sky   { border-top-color: var(--sky); }
+.kpi.lime  { border-top-color: var(--lime); }
+.kpi.rose  { border-top-color: var(--rose); }
+.kpi.violet{ border-top-color: var(--violet); }
 
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-}
-
-.kpi-card.gold::before  { background: var(--gold); }
-.kpi-card.teal::before  { background: var(--teal); }
-.kpi-card.rose::before  { background: var(--rose); }
-.kpi-card.sky::before   { background: var(--sky); }
-.kpi-card.lime::before  { background: #84CC16; }
-.kpi-card.violet::before { background: #A78BFA; }
-
-.kpi-icon {
-    font-size: 1.3rem;
-    margin-bottom: 12px;
-    opacity: 0.7;
-}
-
-.kpi-card.gold .kpi-icon  { color: var(--gold); }
-.kpi-card.teal .kpi-icon  { color: var(--teal); }
-.kpi-card.rose .kpi-icon  { color: var(--rose); }
-.kpi-card.sky .kpi-icon   { color: var(--sky); }
-.kpi-card.lime .kpi-icon  { color: #84CC16; }
-.kpi-card.violet .kpi-icon { color: #A78BFA; }
+.kpi-icon { font-size: 18px; margin-bottom: 10px; opacity: .75; }
+.kpi.gold  .kpi-icon { color: var(--gold); }
+.kpi.teal  .kpi-icon { color: var(--teal); }
+.kpi.sky   .kpi-icon { color: var(--sky); }
+.kpi.lime  .kpi-icon { color: var(--lime); }
+.kpi.rose  .kpi-icon { color: var(--rose); }
+.kpi.violet.kpi-icon { color: var(--violet); }
 
 .kpi-num {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 2rem;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900; font-size: 28px;
+    color: var(--text); line-height: 1; margin-bottom: 3px;
 }
-
-.kpi-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+.kpi-lbl {
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em;
     color: var(--muted);
 }
 
-/* ── PANELS ── */
+/* ─── PANEL ─────────────────────────── */
 .panel {
-    background: var(--ink-mid);
+    background: var(--navy2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
 }
-
-.panel-head {
-    padding: 16px 20px;
+.ph {
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
 }
-
-.panel-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+.pt {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .07em;
     color: var(--text);
 }
+.pm { font-size: 10px; color: var(--muted); }
+.ph a { font-size: 10px; color: var(--gold); text-decoration: none; font-weight: 700; }
+.ph a:hover { color: var(--gold2); }
+.pb { padding: 14px 16px; }
 
-.panel-body { padding: 20px; }
+/* ─── GRID ROWS ─────────────────────────── */
+.row2 { display: grid; grid-template-columns: 5fr 3fr 4fr; gap: 10px; margin-bottom: 10px; }
+.row3 { display: grid; grid-template-columns: 4fr 8fr; gap: 10px; margin-bottom: 10px; }
+.row4 { display: grid; grid-template-columns: 4fr 4fr 4fr; gap: 10px; }
 
-/* ── MATCH TABLE ── */
-.match-table { width: 100%; border-collapse: collapse; }
+/* ─── MATCH TABLE ─────────────────────────── */
+.match-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .match-table th {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    padding: 0 0 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted); padding: 0 0 9px;
+    text-align: left; border-bottom: 1px solid var(--border);
 }
 .match-table td {
-    padding: 11px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.8rem;
-    vertical-align: middle;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: 11px; vertical-align: middle;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .match-table tr:last-child td { border-bottom: none; }
+.match-table td.fw { font-weight: 700; color: var(--text); }
+.match-table td.mt { color: var(--muted); }
 
 .status-pill {
-    font-size: 0.6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 3px 9px;
-    border-radius: 20px;
+    font-size: 9px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 2px 8px; border-radius: 99px;
 }
-.status-pill.confirmed { background: rgba(0,201,167,0.12); color: var(--teal); }
-.status-pill.pending   { background: rgba(245,168,0,0.12);  color: var(--gold); }
-.status-pill.rejected  { background: rgba(255,77,109,0.12); color: var(--rose); }
+.status-pill.confirmed { background: rgba(0,201,167,.12); color: var(--teal); }
+.status-pill.pending   { background: rgba(245,168,0,.12);  color: var(--gold); }
+.status-pill.rejected  { background: rgba(255,77,109,.12); color: var(--rose); }
 
-/* ── TEAM WIN-RATE BARS ── */
-.team-bar-row { margin-bottom: 14px; }
-.team-bar-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 0.78rem;
-    font-weight: 600;
+/* ─── WIN RATE BARS ─────────────────────────── */
+.bar-row { margin-bottom: 11px; }
+.bar-label {
+    display: flex; justify-content: space-between;
+    margin-bottom: 5px; font-size: 11px; font-weight: 600; color: var(--text);
 }
-.team-bar-track {
-    background: rgba(255,255,255,0.06);
-    border-radius: 20px;
-    height: 8px;
-    overflow: hidden;
+.bar-pct {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800; color: var(--gold);
 }
-.team-bar-fill {
-    height: 100%;
-    border-radius: 20px;
+.bar-track {
+    background: rgba(255,255,255,.06);
+    border-radius: 99px; height: 7px; overflow: hidden;
+}
+.bar-fill {
+    height: 100%; border-radius: 99px;
     background: linear-gradient(90deg, var(--gold), var(--teal));
-    transition: width 1.4s cubic-bezier(.4,0,.2,1);
+    width: 0;
+    transition: width 1.3s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── PLAYER LIST ── */
+/* ─── PLAYER LIST ─────────────────────────── */
 .player-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.04);
 }
 .player-row:last-child { border-bottom: none; }
-
-.player-avatar {
-    width: 36px; height: 36px;
-    border-radius: 9px;
-    background: linear-gradient(135deg, var(--ink-soft), var(--ink));
-    border: 1px solid var(--border);
+.player-av {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: var(--navy3); border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800;
-    font-size: 0.8rem;
-    color: var(--gold);
-    flex-shrink: 0;
-    text-transform: uppercase;
+    font-weight: 800; font-size: 11px; color: var(--gold);
+    flex-shrink: 0; text-transform: uppercase;
 }
-
-.player-name { font-weight: 700; font-size: 0.82rem; }
-.player-meta { font-size: 0.68rem; color: var(--muted); }
-
+.pname { font-weight: 700; font-size: 11px; color: var(--text); }
+.pmeta { font-size: 9px; color: var(--muted); }
 .team-tag {
-    margin-left: auto;
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 20px;
-    background: rgba(56,189,248,0.1);
-    color: var(--sky);
-    text-transform: uppercase;
-    flex-shrink: 0;
+    margin-left: auto; flex-shrink: 0;
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 99px;
+    background: rgba(56,189,248,.1); color: var(--sky);
 }
 
-/* ── STATUS RING ── */
-.status-ring-wrap {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+/* ─── QUICK ACTIONS ─────────────────────────── */
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-btn {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 12px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 8px; text-decoration: none;
+    color: var(--text); font-weight: 700; font-size: 11px;
+    transition: .18s; cursor: pointer;
+}
+.quick-btn:hover {
+    background: rgba(245,168,0,.08);
+    border-color: rgba(245,168,0,.28);
+    color: var(--gold);
+}
+.qi {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
 }
 
-.ring-legend { flex: 1; }
-.legend-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 0.78rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.legend-item:last-child { border-bottom: none; }
-.legend-dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    margin-right: 8px;
-    flex-shrink: 0;
-}
-
-/* ── SYSTEM STATUS ── */
+/* ─── SYSTEM STATUS ─────────────────────────── */
 .sys-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 11px;
 }
 .sys-row:last-child { border-bottom: none; }
+.sys-ind { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; }
+.sys-dot { width: 6px; height: 6px; border-radius: 50%; }
 
-.sys-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    font-weight: 700;
+/* ─── CHART LEGEND ─────────────────────────── */
+.lgnd { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+.lgnd-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
+.lgnd-sq { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ─── DONUT LEGEND ─────────────────────────── */
+.dl-item {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.dl-item:last-child { border-bottom: none; }
+.dl-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+/* ─── COMPLETION BAR ─────────────────────────── */
+.comp-bar-track {
+    background: rgba(255,255,255,.06); border-radius: 99px;
+    height: 6px; overflow: hidden; margin-top: 5px;
+}
+.comp-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), var(--teal));
+    transition: width 1.3s ease;
 }
 
-.sys-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-}
-
-/* ── QUICK ACTIONS ── */
-.quick-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.quick-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--text);
-    font-weight: 700;
-    font-size: 0.78rem;
-    transition: 0.2s;
-}
-
-.quick-btn:hover {
-    background: rgba(245,168,0,0.08);
-    border-color: rgba(245,168,0,0.3);
-    color: var(--gold);
-}
-
-.quick-btn-icon {
-    width: 34px; height: 34px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-/* ── MONO NUMBERS ── */
-.mono { font-family: 'DM Mono', monospace; }
-
-/* ── SCROLLBAR ── */
+/* ─── SCROLLBAR ─────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--ink-soft); border-radius: 10px; }
-
-/* ── ANIMATIONS ── */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.kpi-card { animation: fadeUp 0.5s ease both; }
-.kpi-card:nth-child(1) { animation-delay: 0.05s; }
-.kpi-card:nth-child(2) { animation-delay: 0.10s; }
-.kpi-card:nth-child(3) { animation-delay: 0.15s; }
-.kpi-card:nth-child(4) { animation-delay: 0.20s; }
-.kpi-card:nth-child(5) { animation-delay: 0.25s; }
-.kpi-card:nth-child(6) { animation-delay: 0.30s; }
+::-webkit-scrollbar-thumb { background: var(--navy3); border-radius: 10px; }
 </style>
 </head>
 <body>
 
-<!-- ══════════════ SIDEBAR ══════════════ -->
-<div id="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-mark">NB</div>
-        <div class="logo-title">NBSC Admin</div>
-        <div class="logo-sub">Command Center</div>
+<div class="shell">
+
+    <!-- ══ SIDEBAR ══ -->
+    <div id="sidebar">
+        <div class="sb-logo">
+            <div class="sb-mark">NB</div>
+            <div class="sb-title">NBSC Admin</div>
+            <div class="sb-sub">Command Center</div>
+        </div>
+
+        <div class="sb-nav">
+            <div class="sb-section">Main</div>
+            <a class="nav-item active" href="admin.php">
+                <i class="bi bi-grid-fill ni"></i> Overview
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/userManagement/view_teams.php">
+                <i class="bi bi-shield-fill ni"></i> Teams
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/match_system/matches.php">
+                <i class="bi bi-trophy-fill ni"></i> Matches
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/userManagement/manage_users.php">
+                <i class="bi bi-people-fill ni"></i> Players
+            </a>
+
+            <div class="sb-section">Management</div>
+            <a class="nav-item" href="/ICS_APP_DEV1/dashboard_and_admin/dashboardmanager.php">
+                <i class="bi bi-cpu-fill ni"></i> Task Manager
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/userManagement/schedule.php">
+                <i class="bi bi-calendar3 ni"></i> Schedule
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/Teams%26history1/battle_history.php">
+                <i class="bi bi-bar-chart-fill ni"></i> Battle History
+            </a>
+
+            <div class="sb-section">System</div>
+            <a class="nav-item" href="/ICS_APP_DEV1/index.php">
+                <i class="bi bi-house-fill ni"></i> Homepage
+            </a>
+            <a class="nav-item" href="/ICS_APP_DEV1/authentication/logout.php" style="color:var(--rose);">
+                <i class="bi bi-box-arrow-left ni"></i> Sign Out
+            </a>
+        </div>
+
+        <div class="sb-foot">
+            <div class="admin-chip">
+                <div class="admin-av"><?= strtoupper(substr($_SESSION['username'], 0, 2)); ?></div>
+                <div>
+                    <div style="font-weight:700;font-size:11px;color:var(--text)"><?= htmlspecialchars($_SESSION['username']); ?></div>
+                    <div style="font-size:9px;color:var(--muted)">Administrator</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="sidebar-nav">
-        <div class="nav-section-label">Main</div>
-        <a class="nav-item active" href="admin.php">
-            <span class="nav-icon"><i class="bi bi-grid-fill"></i></span> Overview
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/userManagement/view_teams.php">
-            <span class="nav-icon"><i class="bi bi-shield-fill"></i></span> Teams
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/match_system/matches.php">
-            <span class="nav-icon"><i class="bi bi-trophy-fill"></i></span> Matches
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/userManagement/manage_users.php">
-            <span class="nav-icon"><i class="bi bi-people-fill"></i></span> Players
-        </a>
+    <!-- ══ MAIN ══ -->
+    <div id="main">
 
-        <div class="nav-section-label">Management</div>
-        <a class="nav-item" href="/ICS_APP_DEV1/dashboard_and_admin/dashboardmanager.php">
-            <span class="nav-icon"><i class="bi bi-cpu-fill"></i></span> Task Manager
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/userManagement/schedule.php">
-            <span class="nav-icon"><i class="bi bi-calendar3"></i></span> Schedule
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/Teams%26history1/battle_history.php">
-            <span class="nav-icon"><i class="bi bi-bar-chart-fill"></i></span> Battle History
-        </a>
-
-        <div class="nav-section-label">System</div>
-        <a class="nav-item" href="/ICS_APP_DEV1/index.php">
-            <span class="nav-icon"><i class="bi bi-house-fill"></i></span> Homepage
-        </a>
-        <a class="nav-item" href="/ICS_APP_DEV1/authentication/logout.php" style="color:#FF4D6D;">
-            <span class="nav-icon"><i class="bi bi-box-arrow-left"></i></span> Sign Out
-        </a>
-    </div>
-
-    <div class="sidebar-footer">
-        <div class="admin-chip">
-            <div class="admin-avatar"><?= strtoupper(substr($_SESSION['username'], 0, 2)); ?></div>
+        <!-- TOPBAR -->
+        <div class="topbar">
             <div>
-                <div style="font-weight:700;font-size:.78rem;"><?= htmlspecialchars($_SESSION['username']); ?></div>
-                <div style="font-size:.62rem;color:var(--muted);">Administrator</div>
+                <div class="page-title">System Overview</div>
+                <div class="tb-date"><?= date('l, F j, Y'); ?></div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- ══════════════ MAIN ══════════════ -->
-<div id="main">
-
-    <!-- TOP BAR -->
-    <div class="topbar">
-        <div>
-            <div class="page-title">System Overview</div>
-            <div style="font-size:.7rem;color:var(--muted);margin-top:2px;"><?= date('l, F j, Y'); ?></div>
-        </div>
-        <div class="topbar-right">
-            <div class="live-badge"><div class="live-dot"></div> Live</div>
-            <a href="/ICS_APP_DEV1/dashboard_and_admin/dashboardmanager.php" class="topbar-btn gold">
-                <i class="bi bi-cpu-fill me-1"></i> Task Manager
-            </a>
-            <a href="/ICS_APP_DEV1/index.php" class="topbar-btn">
-                <i class="bi bi-house me-1"></i> Homepage
-            </a>
-        </div>
-    </div>
-
-    <div class="content-body">
-
-        <!-- KPI ROW -->
-        <div class="kpi-grid">
-            <div class="kpi-card gold">
-                <div class="kpi-icon"><i class="bi bi-person-fill"></i></div>
-                <div class="kpi-num mono"><?= $total_players; ?></div>
-                <div class="kpi-label">Players</div>
-            </div>
-            <div class="kpi-card teal">
-                <div class="kpi-icon"><i class="bi bi-shield-fill"></i></div>
-                <div class="kpi-num mono"><?= $total_teams; ?></div>
-                <div class="kpi-label">Teams</div>
-            </div>
-            <div class="kpi-card sky">
-                <div class="kpi-icon"><i class="bi bi-flag-fill"></i></div>
-                <div class="kpi-num mono"><?= $total_matches; ?></div>
-                <div class="kpi-label">Total Matches</div>
-            </div>
-            <div class="kpi-card lime">
-                <div class="kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="kpi-num mono"><?= $confirmed_matches; ?></div>
-                <div class="kpi-label">Confirmed</div>
-            </div>
-            <div class="kpi-card rose">
-                <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                <div class="kpi-num mono"><?= $pending_reqs; ?></div>
-                <div class="kpi-label">Pending</div>
-            </div>
-            <div class="kpi-card violet">
-                <div class="kpi-icon"><i class="bi bi-calendar-check-fill"></i></div>
-                <div class="kpi-num mono"><?= $total_reservations; ?></div>
-                <div class="kpi-label">Reservations</div>
+            <div class="tb-right">
+                <div class="live-badge"><div class="live-dot"></div> Live</div>
+                <a href="/ICS_APP_DEV1/dashboard_and_admin/dashboardmanager.php" class="tb-btn gold">
+                    <i class="bi bi-cpu-fill"></i> Task Manager
+                </a>
+                <a href="/ICS_APP_DEV1/index.php" class="tb-btn">
+                    <i class="bi bi-house"></i> Homepage
+                </a>
             </div>
         </div>
 
-        <!-- ROW 2: Charts -->
-        <div class="row g-3 mb-3">
+        <!-- CONTENT -->
+        <div class="content">
 
-            <!-- Monthly Activity Line -->
-            <div class="col-md-5">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Match Activity</div>
-                        <span style="font-size:.65rem;color:var(--muted);">Last 6 months</span>
-                    </div>
-                    <div class="panel-body">
-                        <canvas id="activityChart" height="180"></canvas>
-                    </div>
+            <!-- KPI CARDS -->
+            <div class="kpi-grid">
+                <div class="kpi gold">
+                    <div class="kpi-icon"><i class="bi bi-person-fill" style="color:var(--gold)"></i></div>
+                    <div class="kpi-num"><?= $total_players; ?></div>
+                    <div class="kpi-lbl">Players</div>
+                </div>
+                <div class="kpi teal">
+                    <div class="kpi-icon"><i class="bi bi-shield-fill" style="color:var(--teal)"></i></div>
+                    <div class="kpi-num"><?= $total_teams; ?></div>
+                    <div class="kpi-lbl">Teams</div>
+                </div>
+                <div class="kpi sky">
+                    <div class="kpi-icon"><i class="bi bi-flag-fill" style="color:var(--sky)"></i></div>
+                    <div class="kpi-num"><?= $total_matches; ?></div>
+                    <div class="kpi-lbl">Total Matches</div>
+                </div>
+                <div class="kpi lime">
+                    <div class="kpi-icon"><i class="bi bi-check-circle-fill" style="color:var(--lime)"></i></div>
+                    <div class="kpi-num"><?= $confirmed_matches; ?></div>
+                    <div class="kpi-lbl">Confirmed</div>
+                </div>
+                <div class="kpi rose">
+                    <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill" style="color:var(--rose)"></i></div>
+                    <div class="kpi-num"><?= $pending_reqs; ?></div>
+                    <div class="kpi-lbl">Pending</div>
+                </div>
+                <div class="kpi violet">
+                    <div class="kpi-icon"><i class="bi bi-calendar-check-fill" style="color:var(--violet)"></i></div>
+                    <div class="kpi-num"><?= $total_reservations; ?></div>
+                    <div class="kpi-lbl">Reservations</div>
                 </div>
             </div>
 
-            <!-- Status Doughnut -->
-            <div class="col-md-3">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Match Status</div>
+            <!-- ROW 2: Charts -->
+            <div class="row2">
+
+                <!-- Activity Line -->
+                <div class="panel">
+                    <div class="ph">
+                        <span class="pt">Match Activity</span>
+                        <span class="pm">Last 6 months</span>
                     </div>
-                    <div class="panel-body">
-                        <canvas id="statusChart" height="140" style="max-width:140px;margin:0 auto;display:block;"></canvas>
-                        <div class="mt-3">
-                            <div class="legend-item">
-                                <div style="display:flex;align-items:center;">
-                                    <div class="legend-dot" style="background:var(--teal);"></div>
-                                    Confirmed
-                                </div>
-                                <span class="mono" style="font-size:.78rem;"><?= $status_data['confirmed']; ?></span>
+                    <div class="pb">
+                        <div class="lgnd">
+                            <span class="lgnd-item"><span class="lgnd-sq" style="background:var(--gold)"></span>Matches</span>
+                        </div>
+                        <div style="position:relative;height:150px">
+                            <canvas id="activityChart" role="img" aria-label="Line chart of match activity over the last 6 months">Monthly match activity data.</canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Donut -->
+                <div class="panel">
+                    <div class="ph"><span class="pt">Match Status</span></div>
+                    <div class="pb">
+                        <div style="position:relative;height:110px;width:110px;margin:0 auto 12px">
+                            <canvas id="statusChart" role="img" aria-label="Doughnut chart showing match status breakdown: confirmed, pending, and rejected counts">Match status breakdown by count.</canvas>
+                        </div>
+                        <div>
+                            <div class="dl-item">
+                                <span><span class="dl-dot" style="background:var(--teal)"></span>Confirmed</span>
+                                <span style="font-weight:700;color:var(--text)"><?= $status_data['confirmed']; ?></span>
                             </div>
-                            <div class="legend-item">
-                                <div style="display:flex;align-items:center;">
-                                    <div class="legend-dot" style="background:var(--gold);"></div>
-                                    Pending
-                                </div>
-                                <span class="mono" style="font-size:.78rem;"><?= $status_data['pending']; ?></span>
+                            <div class="dl-item">
+                                <span><span class="dl-dot" style="background:var(--gold)"></span>Pending</span>
+                                <span style="font-weight:700;color:var(--text)"><?= $status_data['pending']; ?></span>
                             </div>
-                            <div class="legend-item">
-                                <div style="display:flex;align-items:center;">
-                                    <div class="legend-dot" style="background:var(--rose);"></div>
-                                    Rejected
-                                </div>
-                                <span class="mono" style="font-size:.78rem;"><?= $status_data['rejected']; ?></span>
+                            <div class="dl-item">
+                                <span><span class="dl-dot" style="background:var(--rose)"></span>Rejected</span>
+                                <span style="font-weight:700;color:var(--text)"><?= $status_data['rejected']; ?></span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservations Bar -->
+                <div class="panel">
+                    <div class="ph"><span class="pt">Reservations / Month</span></div>
+                    <div class="pb">
+                        <div class="lgnd">
+                            <span class="lgnd-item"><span class="lgnd-sq" style="background:var(--sky)"></span>Reservations</span>
+                        </div>
+                        <div style="position:relative;height:150px">
+                            <canvas id="reservationChart" role="img" aria-label="Bar chart of reservations per month over the last 6 months">Monthly reservation data.</canvas>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Reservations bar -->
-            <div class="col-md-4">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Reservations / Month</div>
-                    </div>
-                    <div class="panel-body">
-                        <canvas id="reservationChart" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- ROW 3: Win Rates + Recent Matches -->
+            <div class="row3">
 
-        <!-- ROW 3: Team win rates + Recent Matches -->
-        <div class="row g-3 mb-3">
-
-            <!-- Team Win Rate -->
-            <div class="col-md-4">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Team Win Rates</div>
-                        <span style="font-size:.65rem;color:var(--muted);">Top performers</span>
+                <!-- Win Rate Bars -->
+                <div class="panel">
+                    <div class="ph">
+                        <span class="pt">Team Win Rates</span>
+                        <span class="pm">Top performers</span>
                     </div>
-                    <div class="panel-body">
+                    <div class="pb">
                         <?php if (empty($team_stats)): ?>
-                            <p style="color:var(--muted);font-size:.8rem;">No confirmed match data yet.</p>
+                            <p style="color:var(--muted);font-size:11px">No confirmed match data yet.</p>
                         <?php else: ?>
                             <?php foreach ($team_stats as $ts): ?>
-                            <div class="team-bar-row">
-                                <div class="team-bar-label">
+                            <div class="bar-row">
+                                <div class="bar-label">
                                     <span><?= htmlspecialchars($ts['team_name']); ?></span>
-                                    <span class="mono" style="color:var(--gold);"><?= $ts['win_pct']; ?>%</span>
+                                    <span class="bar-pct"><?= $ts['win_pct']; ?>%</span>
                                 </div>
-                                <div class="team-bar-track">
-                                    <div class="team-bar-fill" data-width="<?= $ts['win_pct']; ?>" style="width:0%"></div>
+                                <div class="bar-track">
+                                    <div class="bar-fill" data-width="<?= $ts['win_pct']; ?>"></div>
                                 </div>
                             </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
 
-            <!-- Recent Matches -->
-            <div class="col-md-8">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Recent Matches</div>
-                        <a href="/ICS_APP_DEV1/match_system/matches.php" style="font-size:.68rem;color:var(--gold);text-decoration:none;font-weight:700;">View All →</a>
+                <!-- Recent Matches Table -->
+                <div class="panel">
+                    <div class="ph">
+                        <span class="pt">Recent Matches</span>
+                        <a href="/ICS_APP_DEV1/match_system/matches.php">View All →</a>
                     </div>
-                    <div class="panel-body" style="padding:0 20px;">
+                    <div style="padding:0 16px">
                         <table class="match-table">
                             <thead>
                                 <tr>
-                                    <th>Home</th>
-                                    <th>Score</th>
-                                    <th>Away</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
+                                    <th style="width:25%">Home</th>
+                                    <th style="width:17%">Score</th>
+                                    <th style="width:25%">Away</th>
+                                    <th style="width:17%">Date</th>
+                                    <th style="width:16%">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if ($recent_matches && $recent_matches->num_rows > 0):
                                     while ($rm = $recent_matches->fetch_assoc()): ?>
                                 <tr>
-                                    <td style="font-weight:700;"><?= htmlspecialchars($rm['home_n']); ?></td>
-                                    <td>
+                                    <td class="fw"><?= htmlspecialchars($rm['home_n']); ?></td>
+                                    <td class="fw">
                                         <?php if ($rm['final_status'] === 'confirmed'): ?>
-                                            <span class="mono" style="color:var(--text);font-weight:700;"><?= $rm['home_score']; ?> – <?= $rm['away_score']; ?></span>
+                                            <?= $rm['home_score']; ?> – <?= $rm['away_score']; ?>
                                         <?php else: ?>
-                                            <span style="color:var(--muted);">—</span>
+                                            <span style="color:var(--muted)">—</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="font-weight:700;"><?= htmlspecialchars($rm['away_n']); ?></td>
-                                    <td style="color:var(--muted);"><?= date('M d', strtotime($rm['reservation_date'])); ?></td>
+                                    <td class="fw"><?= htmlspecialchars($rm['away_n']); ?></td>
+                                    <td class="mt"><?= date('M d', strtotime($rm['reservation_date'])); ?></td>
                                     <td><span class="status-pill <?= $rm['final_status']; ?>"><?= ucfirst($rm['final_status']); ?></span></td>
                                 </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
-                                <tr><td colspan="5" style="color:var(--muted);padding:20px 0;">No matches found.</td></tr>
+                                <tr><td colspan="5" style="color:var(--muted);padding:16px 0">No matches found.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ROW 4: Players + Quick Actions + System Status -->
-        <div class="row g-3">
+            <!-- ROW 4: Players + Quick Actions + System Status -->
+            <div class="row4">
 
-            <!-- Recent Players -->
-            <div class="col-md-4">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Recent Players</div>
-                        <a href="/ICS_APP_DEV1/userManagement/manage_users.php" style="font-size:.68rem;color:var(--gold);text-decoration:none;font-weight:700;">Manage →</a>
+                <!-- Recent Players -->
+                <div class="panel">
+                    <div class="ph">
+                        <span class="pt">Recent Players</span>
+                        <a href="/ICS_APP_DEV1/userManagement/manage_users.php">Manage →</a>
                     </div>
-                    <div class="panel-body">
+                    <div class="pb">
                         <?php if ($recent_players && $recent_players->num_rows > 0):
-                            while ($rp = $recent_players->fetch_assoc()): ?>
+                            while ($rp = $recent_players->fetch_assoc()):
+                                $initials = strtoupper(substr($rp['full_name'] ?? $rp['username'], 0, 2));
+                        ?>
                         <div class="player-row">
-                            <div class="player-avatar"><?= strtoupper(substr($rp['full_name'] ?? $rp['username'], 0, 2)); ?></div>
+                            <div class="player-av"><?= $initials; ?></div>
                             <div>
-                                <div class="player-name"><?= htmlspecialchars($rp['full_name'] ?? $rp['username']); ?></div>
-                                <div class="player-meta"><?= htmlspecialchars($rp['course'] ?? 'No course'); ?></div>
+                                <div class="pname"><?= htmlspecialchars($rp['full_name'] ?? $rp['username']); ?></div>
+                                <div class="pmeta"><?= htmlspecialchars($rp['course'] ?? 'No course'); ?></div>
                             </div>
                             <?php if ($rp['team_name']): ?>
                                 <div class="team-tag"><?= htmlspecialchars($rp['team_name']); ?></div>
                             <?php endif; ?>
                         </div>
                         <?php endwhile; else: ?>
-                            <p style="color:var(--muted);font-size:.8rem;">No players found.</p>
+                            <p style="color:var(--muted);font-size:11px">No players found.</p>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="col-md-4">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">Quick Actions</div>
-                    </div>
-                    <div class="panel-body">
+                <!-- Quick Actions -->
+                <div class="panel">
+                    <div class="ph"><span class="pt">Quick Actions</span></div>
+                    <div class="pb">
                         <div class="quick-grid">
                             <a href="/ICS_APP_DEV1/userManagement/add_team.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(245,168,0,0.1);color:var(--gold);">
-                                    <i class="bi bi-plus-circle-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(245,168,0,.1);color:var(--gold)"><i class="bi bi-plus-circle-fill"></i></div>
                                 New Team
                             </a>
                             <a href="/ICS_APP_DEV1/userManagement/schedule.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(0,201,167,0.1);color:var(--teal);">
-                                    <i class="bi bi-calendar-check-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(0,201,167,.1);color:var(--teal)"><i class="bi bi-calendar-check-fill"></i></div>
                                 Schedule
                             </a>
                             <a href="/ICS_APP_DEV1/userManagement/view_teams.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(56,189,248,0.1);color:var(--sky);">
-                                    <i class="bi bi-shield-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(56,189,248,.1);color:var(--sky)"><i class="bi bi-shield-fill"></i></div>
                                 View Teams
                             </a>
                             <a href="/ICS_APP_DEV1/match_system/matches.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(255,77,109,0.1);color:var(--rose);">
-                                    <i class="bi bi-trophy-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(255,77,109,.1);color:var(--rose)"><i class="bi bi-trophy-fill"></i></div>
                                 Matches
                             </a>
                             <a href="/ICS_APP_DEV1/Teams%26history1/battle_history.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(132,204,22,0.1);color:#84CC16;">
-                                    <i class="bi bi-bar-chart-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(132,204,22,.1);color:var(--lime)"><i class="bi bi-bar-chart-fill"></i></div>
                                 History
                             </a>
                             <a href="/ICS_APP_DEV1/userManagement/manage_users.php" class="quick-btn">
-                                <div class="quick-btn-icon" style="background:rgba(167,139,250,0.1);color:#A78BFA;">
-                                    <i class="bi bi-person-gear-fill"></i>
-                                </div>
+                                <div class="qi" style="background:rgba(167,139,250,.1);color:var(--violet)"><i class="bi bi-person-gear-fill"></i></div>
                                 Users
                             </a>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- System Status -->
-            <div class="col-md-4">
-                <div class="panel h-100">
-                    <div class="panel-head">
-                        <div class="panel-title">System Status</div>
-                    </div>
-                    <div class="panel-body">
+                <!-- System Status -->
+                <div class="panel">
+                    <div class="ph"><span class="pt">System Status</span></div>
+                    <div class="pb">
                         <div class="sys-row">
                             <span>Database</span>
-                            <div class="sys-indicator" style="color:var(--teal);">
-                                <div class="sys-dot" style="background:var(--teal);"></div> Connected
+                            <div class="sys-ind" style="color:var(--teal)">
+                                <div class="sys-dot" style="background:var(--teal)"></div> Connected
                             </div>
                         </div>
                         <div class="sys-row">
                             <span>Match Sync</span>
-                            <div class="sys-indicator" style="color:var(--sky);">
-                                <div class="sys-dot" style="background:var(--sky);animation:pulse 1.5s infinite;"></div> Active
+                            <div class="sys-ind" style="color:var(--sky)">
+                                <div class="sys-dot" style="background:var(--sky);animation:pulse 1.5s infinite"></div> Active
                             </div>
                         </div>
                         <div class="sys-row">
                             <span>Admin Session</span>
-                            <div class="sys-indicator" style="color:var(--gold);">
-                                <div class="sys-dot" style="background:var(--gold);"></div> Expires 2h
+                            <div class="sys-ind" style="color:var(--gold)">
+                                <div class="sys-dot" style="background:var(--gold)"></div> Expires 2h
                             </div>
                         </div>
                         <div class="sys-row">
                             <span>Server</span>
-                            <div class="sys-indicator" style="color:var(--teal);">
-                                <div class="sys-dot" style="background:var(--teal);"></div> Apache/PHP
+                            <div class="sys-ind" style="color:var(--teal)">
+                                <div class="sys-dot" style="background:var(--teal)"></div> Apache/PHP
                             </div>
                         </div>
                         <div class="sys-row">
                             <span>PHP Version</span>
-                            <span class="mono" style="color:var(--muted);font-size:.72rem;"><?= phpversion(); ?></span>
+                            <span style="color:var(--muted);font-size:10px"><?= phpversion(); ?></span>
                         </div>
                         <div class="sys-row">
                             <span>Current Time</span>
-                            <span class="mono" style="color:var(--muted);font-size:.72rem;" id="liveClock"></span>
+                            <span style="color:var(--muted);font-size:10px" id="liveClock"></span>
                         </div>
-                        <hr style="border-color:var(--border);margin:14px 0;">
-                        <div style="font-size:.7rem;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Completion Rate</div>
-                        <?php
-                            $comp_rate = $total_matches > 0 ? round($confirmed_matches / $total_matches * 100) : 0;
-                        ?>
-                        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px;">
+                        <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+                        <div style="font-size:9px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Completion Rate</div>
+                        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
                             <span>Matches Finished</span>
-                            <span class="mono" style="color:var(--gold);"><?= $comp_rate; ?>%</span>
+                            <span style="color:var(--gold);font-weight:700"><?= $comp_rate; ?>%</span>
                         </div>
-                        <div style="background:rgba(255,255,255,0.06);border-radius:20px;height:7px;overflow:hidden;">
-                            <div style="height:100%;width:<?= $comp_rate; ?>%;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:20px;transition:width 1.4s ease;"></div>
+                        <div class="comp-bar-track">
+                            <div class="comp-bar-fill" style="width:<?= $comp_rate; ?>%"></div>
                         </div>
                     </div>
                 </div>
+
             </div>
-        </div>
+        </div><!-- /content -->
+    </div><!-- /main -->
+</div><!-- /shell -->
 
-    </div><!-- /content-body -->
-</div><!-- /main -->
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ── LIVE CLOCK ──
+// Live clock
 function updateClock() {
     const el = document.getElementById('liveClock');
-    if (el) el.textContent = new Date().toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    if (el) el.textContent = new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// ── CHART DEFAULTS ──
+// Chart defaults
 Chart.defaults.color = '#5A7A9F';
-Chart.defaults.font.family = 'Manrope';
-Chart.defaults.font.size = 11;
-
+Chart.defaults.font.family = 'Barlow';
+Chart.defaults.font.size = 10;
 const gridColor = 'rgba(255,255,255,0.05)';
 
-// ── ACTIVITY LINE CHART ──
+// Activity line chart
 new Chart(document.getElementById('activityChart'), {
     type: 'line',
     data: {
-        labels: <?= json_encode(array_keys($monthly_data)); ?>,
+        labels: <?= json_encode($monthly_labels); ?>,
         datasets: [{
             label: 'Matches',
-            data: <?= json_encode(array_values($monthly_data)); ?>,
+            data: <?= json_encode($monthly_values); ?>,
             borderColor: '#F5A800',
             backgroundColor: 'rgba(245,168,0,0.08)',
-            tension: 0.45,
+            tension: 0.42,
             fill: true,
             pointBackgroundColor: '#F5A800',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            borderWidth: 2.5,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            borderWidth: 2,
         }]
     },
     options: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             x: { grid: { color: gridColor }, ticks: { color: '#5A7A9F' } },
@@ -1033,41 +883,46 @@ new Chart(document.getElementById('activityChart'), {
     }
 });
 
-// ── STATUS DOUGHNUT ──
+// Status doughnut
 new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
-        labels: ['Confirmed','Pending','Rejected'],
+        labels: ['Confirmed', 'Pending', 'Rejected'],
         datasets: [{
             data: [<?= $status_data['confirmed']; ?>, <?= $status_data['pending']; ?>, <?= $status_data['rejected']; ?>],
-            backgroundColor: ['#00C9A7','#F5A800','#FF4D6D'],
+            backgroundColor: ['#00C9A7', '#F5A800', '#FF4D6D'],
             borderWidth: 0,
-            hoverOffset: 6,
+            hoverOffset: 5,
         }]
     },
     options: {
         cutout: '68%',
-        plugins: { legend: { display: false }, tooltip: { callbacks: {
-            label: ctx => ` ${ctx.label}: ${ctx.raw}`
-        }}}
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+        }
     }
 });
 
-// ── RESERVATIONS BAR ──
+// Reservations bar chart
 new Chart(document.getElementById('reservationChart'), {
     type: 'bar',
     data: {
-        labels: <?= json_encode(array_keys($res_monthly)); ?>,
+        labels: <?= json_encode($res_labels); ?>,
         datasets: [{
             label: 'Reservations',
-            data: <?= json_encode(array_values($res_monthly)); ?>,
-            backgroundColor: 'rgba(56,189,248,0.25)',
+            data: <?= json_encode($res_values); ?>,
+            backgroundColor: 'rgba(56,189,248,0.18)',
             borderColor: '#38BDF8',
-            borderWidth: 2,
-            borderRadius: 6,
+            borderWidth: 1.5,
+            borderRadius: 5,
         }]
     },
     options: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             x: { grid: { color: gridColor }, ticks: { color: '#5A7A9F' } },
@@ -1076,12 +931,13 @@ new Chart(document.getElementById('reservationChart'), {
     }
 });
 
-// ── ANIMATE TEAM BARS ──
+// Animate team win rate bars
 setTimeout(() => {
-    document.querySelectorAll('.team-bar-fill').forEach(el => {
+    document.querySelectorAll('.bar-fill').forEach(el => {
         el.style.width = el.dataset.width + '%';
     });
-}, 300);
+}, 400);
 </script>
+
 </body>
 </html>
